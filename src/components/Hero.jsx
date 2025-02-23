@@ -117,20 +117,20 @@ export default function Hero() {
           transition={{ duration: 0.9 }}
           className="space-y-6 text-center md:text-left"
         >
-          <h1 className="text-white font-bold text-3xl md:text-6xl lg:text-7xl leading-tight">
+          <h1 className="text-white  italic font-serif font-bold text-3xl md:text-6xl lg:text-7xl leading-tight">
             Unlock the world of AI and transform the way you learn,write and plan smarter!!
           </h1>
-          <p className="text-white md:text-2xl leading-relaxed">
+          <p className="text-white italic font-serif md:text-2xl leading-relaxed">
             The ultimate AI-driven toolkit for smarter learning,effortless writing,seamless task management <br />and exam success powered by innovation and the solana blockchain.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center md:justify-start">
             <Link href="/signup">
-              <button className="px-6 py-3 rounded-xl bg-[#FFD700] text-black text-lg font-semibold hover:opacity-80 transition">
+              <button className="px-6 py-3 rounded-xl bg-[#FFD700] text-black italic font-serif text-lg font-semibold hover:opacity-80 transition">
                 Beta Access
               </button>
             </Link>
             <Link href="/documentation">
-              <button className="px-6 py-3 rounded-xl border border-white text-white flex items-center gap-3 text-lg hover:bg-white hover:text-black transition">
+              <button className="px-6 py-3 rounded-xl border border-white text-white italic font-serif flex items-center gap-3 text-lg hover:bg-white hover:text-black transition">
                 Connect your wallet <FaAngleRight />
               </button>
             </Link>

@@ -6,12 +6,12 @@ function Product() {
     <section className="bg-[url('/robot.jpg')] bg-cover bg-center bg-no-repeat opacity-40 md:opacity-100">
       <div className='bg-black text-white py-8 px-6 md:px-12'>
         <div>
-         <h1 className='text-2xl font-bold mb-3 flex justify-center'>Success Stories: Empower Your Journey With Our Virtual Lab Experience</h1>
+         <h1 className='text-2xl italic font-serif font-bold mb-3 flex justify-center'>Success Stories: Empower Your Journey With Our Virtual Lab Experience</h1>
         </div>
         <div className='grid grid-cols-3 flex justify-items-center sm:grid-cols-2 lg:grid-cols-4 gap-9'>
         <div className="bg-white shadow-lg p-6 gap-18 rounded-xl transform transition hover:scale-105">
-      <h2 className="text-2xl font-bold mb-4 text-blue-900">AI Writing Assistant</h2>
-      <p className="text-gray-700">
+      <h2 className="text-2xl italic font-serif font-bold mb-4 text-blue-900">AI Writing Assistant</h2>
+      <p className="text-gray-700 italic font-serif">
         Improve your essays,reports and writing projects <br />with AI-powered proofreading.
       </p>
 
@@ -20,14 +20,14 @@ function Product() {
             </Link>
     </div>
     <div className="bg-white shadow-lg p-6 gap-18 rounded-xl transform transition hover:scale-105">
-      <h2 className="text-2xl font-bold mb-4 text-blue-900">Task Planner</h2>
-      <p className="text-gray-700">
+      <h2 className="text-2xl italic font-bold mb-4 text-blue-900">Task Planner</h2>
+      <p className="text-gray-700 font-serif italic">
         Manage assignments,deadlines and schedules with <br /> smart AI suggestions.
       </p>
     </div>
     <div className="bg-white shadow-lg p-6 gap-18 rounded-xl transform transition hover:scale-105">
-      <h2 className="text-2xl font-bold mb-4 text-blue-900">Exam Prep & Quizzes</h2>
-      <p className="text-gray-700">
+      <h2 className="text-2xl italic font-bold mb-4 text-blue-900">Exam Prep & Quizzes</h2>
+      <p className="text-gray-700 font-serif italic">
         Practice with AI-generated quizzes and personalized <br /> study plans.
       </p>
     </div>

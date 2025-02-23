@@ -27,7 +27,7 @@ import {
     ];
   
     return (
-      <footer className="bg-yellow-400 text-black py-8 px-6 md:px-12">
+      <footer className="bg-yellow-400 text-black italic font-serif py-8 px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           {/* Logo and Social Icons */}
           <div className="space-y-4">

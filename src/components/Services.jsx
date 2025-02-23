@@ -8,7 +8,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center py-20 px-6">
         <motion.h1
-          className="text-4xl md:text-6xl font-bold mb-6"
+          className="text-4xl italic font-serif md:text-6xl font-bold mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -16,7 +16,7 @@ export default function Home() {
           BUILD, DEPLOY, AUTOMATE
         </motion.h1>
         <motion.p
-          className="text-lg md:text-xl text-gray-300 mb-6"
+          className="text-lg italic font-serif md:text-xl text-gray-300 mb-6"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -24,7 +24,7 @@ export default function Home() {
           Launch and Orchestrate AI Agents
         </motion.p>
         <motion.p
-          className="text-lg text-gray-400 mb-8"
+          className="text-lg italic font-serif text-gray-400 mb-8"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.8 }}
@@ -54,8 +54,8 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20 px-6 bg-gray-800">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Why Choose Education+?</h2>
-          <p className="text-gray-300 mb-10">
+          <h2 className="text-3xl italic font-bold mb-6">Why Choose Education+?</h2>
+          <p className="text-gray-300 mb-10 font-serif italic">
             Design, deploy, and manage AI agents with Education+ advanced tools.
           </p>
           <div className="grid md:grid-cols-3 gap-6">
@@ -81,7 +81,7 @@ export default function Home() {
                 transition={{ delay: index * 0.2, duration: 0.6 }}
                 viewport={{ once: true }}
               >
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <h3 className="text-xl italic font-serif font-semibold mb-2">{feature.title}</h3>
                 <p className="text-gray-300">{feature.desc}</p>
               </motion.div>
             ))}
@@ -92,8 +92,8 @@ export default function Home() {
       {/* Our Expertise Section */}
       <section className="py-20 px-6">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-6">Our Expertise</h2>
-          <p className="text-gray-300 mb-10">
+          <h2 className="text-3xl italic font-serif font-bold mb-6">Our Expertise</h2>
+          <p className="text-gray-300 italic font-serif mb-10">
             We specialize in AI development, automation, and seamless integrations for businesses of all sizes.
           </p>
         </div>
