@@ -145,12 +145,12 @@ export default function Hero() {
       className="relative w-full h-screen"
     >
       {/* Background Image */}
-      <div className="absolute inset-0 w-full h-full bg-[url('/robot.jpg')] bg-cover bg-no-repeat opacity-40 md:opacity-100" />
+      <div className="absolute inset-0 w-full h-full bg-[url('/robotgirl.jpg')] bg-cover bg-no-repeat opacity-40 md:opacity-100" />
 
       {/* Foreground Image */}
       <div className="relative z-10 flex items-center justify-center h-full">
         <Image
-          src="/robot.jpg"
+          src="/robotgirl.jpg"
           alt="Hero illustration"
           width={700}
           height={800}
