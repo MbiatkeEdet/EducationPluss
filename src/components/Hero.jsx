@@ -104,7 +104,7 @@ import { motion } from "framer-motion";
 
 export default function Hero() {
   return (
-    <section className="bg-black min-h-screen">
+    <section className="bg-gray-800 min-h-screen">
       {/* Navbar */}
       <Navbar />
 

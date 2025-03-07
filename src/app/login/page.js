@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default function Login() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -25,6 +26,8 @@ export default function Login() {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="flex min-h-screen items-center justify-center bg-black">
       <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
@@ -72,5 +75,6 @@ export default function Login() {
         </p>
       </div>
     </div>
+    </>
   );
 }
