@@ -57,6 +57,11 @@ export default function DashboardLayout({ children }) {
         <nav className="flex-1 p-5">
           <ul className="space-y-2">
             <li>
+              <Link href="/dashboard" className="block p-3 rounded hover:bg-indigo-700">
+                Home
+              </Link>
+            </li>
+            <li>
               <Link href="/dashboard/writing-help" className="block p-3 rounded hover:bg-indigo-700">
                 Writing Help
               </Link>
