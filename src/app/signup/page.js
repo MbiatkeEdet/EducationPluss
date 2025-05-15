@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import Navbar from "@/components/Navbar";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -35,6 +36,8 @@ export default function SignUp() {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 shadow-lg rounded-lg">
         <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
@@ -106,5 +109,6 @@ export default function SignUp() {
         </p>
       </div>
     </div>
+    </>
   );
 }

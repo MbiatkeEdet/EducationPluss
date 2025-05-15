@@ -1,8 +1,11 @@
 "use client";
+import Navbar from "@/components/Navbar";
 import Head from "next/head";
 
 export default function StudyTools() {
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-gray-50 text-gray-800 p-6">
       <Head>
         <title>Study Tools - Empower Your Learning Journey</title>
@@ -45,5 +48,6 @@ export default function StudyTools() {
         </p>
       </div>
     </div>
+    </>
   );
 }

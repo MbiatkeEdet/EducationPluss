@@ -1,13 +1,13 @@
 "use client";
+import Navbar from "@/components/Navbar";
 import Head from "next/head";
 import Link from "next/link";
 
 export default function TaskManager() {
   return (
+    <>
+    <Navbar />
     <div className="min-h-screen bg-black text-white p-6">
-         <Link href="/" className="mt-4 inline-block bg-yellow-500 text-white px-4 py-2 rounded">
-        Go to Home
-      </Link>
       <Head>
         <title>Task Manager</title>
         <meta
@@ -51,5 +51,6 @@ export default function TaskManager() {
 
       <button className='px-2 py-2 border border-black text-black bg-yellow-200 rounded-xl transition justify-items-center gap-2 mt-4'>Get Started</button>
     </div>
+    </>
   );
 }

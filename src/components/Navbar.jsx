@@ -7,6 +7,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems = [
+    { text: "Home", href: "/"},
     { text: "Documentation", href: "/documentation" },
     { text: "Writing Help", href: "/writing-help" }, // Fixed space issue
     { text: "Task Manager", href: "/task-manager" },
@@ -16,23 +17,23 @@ export default function Navbar() {
   ];
 
   return (
-    <header className="text-yellow-300 italic  bg-black shadow-md">
-      <nav className="flex justify-between items-center py-4 px-6 md:px-12">
+    <header className="text-yellow-300 italic font-serif bg-whitec:\Users\Mbiatke Edet\Desktop\logo3.png shadow-md">
+      <nav className="flex justify-between items-center py-4 px-4 md:px-12">
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/skilloft-black.png"
+            src="/logo7.jpg"
             alt="Education + Logo"
-            width={144}
-            height={40}
-            className="w-28 md:w-36"
+            width={90}
+            height={90}
+            className="w-28 md:w-36 rounded-xl"
             priority
           />
         </Link>
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex md:items-center">
-          <ul className="flex gap-8">
+          <ul className="flex gap-5">
             {navItems.map((page, index) => (
               <li key={index}>
                 <Link href={page.href} className="hover:text-gray-600 transition">

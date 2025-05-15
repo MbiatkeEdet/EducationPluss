@@ -32,7 +32,7 @@ import {
           {/* Logo and Social Icons */}
           <div className="space-y-4">
             <Link href="/">
-              <img src="/skilloft.png" alt="Education+ logo" width={140} />
+              <img src="/logo7.jpg" alt="Education+ logo" width={70} className="rounded-lg" />
             </Link>
             <div className="flex gap-4 text-2xl text-black">
               {socials.map((social, index) => (
