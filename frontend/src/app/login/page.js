@@ -77,7 +77,7 @@ export default function Login() {
             <Link href="/">
               <div className="relative h-12 w-44">
                 <Image
-                  src="/skilloft-black.png"
+                  src="/logo7.jpg"
                   alt="Education+"
                   fill
                   className="object-contain"

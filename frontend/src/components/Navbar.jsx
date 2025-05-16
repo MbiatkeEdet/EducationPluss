@@ -20,10 +20,12 @@ export default function Navbar() {
         <Link href="/" className="flex items-center">
           <div className="relative h-10 w-36">
             <Image
-              src="/skilloft-black.png"
+              src="/logo7.jpg"
               alt="Education+ Logo"
-              fill
+              
               className="object-contain"
+              width={100}
+              height={100}
               priority
             />
           </div>

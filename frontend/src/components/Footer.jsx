@@ -56,7 +56,7 @@ export default function Footer() {
             <Link href="/" className="inline-block">
               <div className="relative h-10 w-36">
                 <Image
-                  src="/skilloft-black.png"
+                  src="/logo7.jpg"
                   alt="Education+ logo"
                   fill
                   className="object-contain"
