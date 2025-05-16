@@ -11,13 +11,15 @@ export default function ChatInterface({
   model = null,
   placeholder = 'Type your message...',
   systemContext = '',
-  showChat = true
+  showChat = true,
+  onAiResponse = null
 }) {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(chatId);
+  const [messageSent, setMessageSent] = useState(false);
   const messagesEndRef = useRef(null);
   
   useEffect(() => {
@@ -35,6 +37,23 @@ export default function ChatInterface({
     // Scroll to bottom of chat whenever history changes
     scrollToBottom();
   }, [chatHistory]);
+
+  useEffect(() => {
+    // When initialMessage changes and is not empty, automatically send it
+    if (initialMessage && !messageSent) {
+      // Send the message to the backend - pass the actual initialMessage directly
+      const fakeEvent = { preventDefault: () => {} };
+      handleSendMessage(fakeEvent, initialMessage); // Pass initialMessage explicitly
+      setMessageSent(true);
+    }
+  }, [initialMessage]);
+
+  // Reset messageSent when initialMessage changes to empty
+  useEffect(() => {
+    if (!initialMessage) {
+      setMessageSent(false);
+    }
+  }, [initialMessage]);
   
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,18 +72,43 @@ export default function ChatInterface({
     }
   };
   
-  const handleSendMessage = async (e) => {
+  const handleSendMessage = async (e, explicitMessage = null) => {
     e.preventDefault();
     
-    if (!message.trim() && !initialMessage) return;
+    // Use the explicit message if provided, otherwise use the input field value
+    const userMessage = explicitMessage || message.trim();
     
-    const userMessage = message.trim() || initialMessage;
+    if (!userMessage) return;
+    
+    // For display purposes, extract just user content when the message includes a system prompt
+    let displayMessage = userMessage;
+    
+    // Check for common patterns in study tools and writing help sections
+    const prefixesToStrip = [
+      "Please help me organize these notes into a well-structured study guide:\n\n",
+      "Please summarize this content for study purposes:\n\n",
+      "Please create a mind map based on this content:\n\n",
+      "Please explain these concepts in a simple, clear way:\n\n",
+      "Please create study flashcards from this content. Format them exactly as specified in your instructions:\n\n",
+      "Please help me paraphrase the following text: ",
+      "I need help with my research on ",
+      "I need help writing an essay about "
+    ];
+    
+    // Strip prefix if it exists
+    for (const prefix of prefixesToStrip) {
+      if (userMessage.startsWith(prefix)) {
+        displayMessage = userMessage.substring(prefix.length);
+        break;
+      }
+    }
     
     // Add user message to chat history immediately for UI feedback
     const updatedChatHistory = [...chatHistory, { 
       role: 'user', 
-      content: userMessage,
-      timestamp: Date.now()
+      content: displayMessage, // Use cleaned display message
+      timestamp: Date.now(),
+      originalContent: userMessage // Store original for API calls
     }];
     
     setChatHistory(updatedChatHistory);
@@ -74,7 +118,7 @@ export default function ChatInterface({
     
     try {
       const response = await apiClient.sendMessage(
-        userMessage, 
+        userMessage, // Send the full original message to API
         currentChatId,
         aiProvider,
         model
@@ -83,6 +127,11 @@ export default function ChatInterface({
       // Update with the server response
       setCurrentChatId(response.data.chat._id);
       setChatHistory(response.data.chat.messages);
+      
+      // Pass the response back to the parent component
+      if (response && onAiResponse) {
+        onAiResponse(response.data.aiResponse);
+      }
     } catch (err) {
       // If error, keep the user message but show error
       setError("Failed to get AI response. Please try again.");

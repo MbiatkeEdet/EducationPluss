@@ -315,8 +315,8 @@ export default function ExamPrepPage() {
           {activePrepSession ? (
             <ChatInterface 
               initialMessage={initialMessage}
-              aiProvider="openai" 
-              model="gpt-4o"
+              aiProvider="deepseek" 
+              model="deepseek-chat"
               placeholder="Ask questions about the exam content..."
               systemContext={`You are an exam preparation assistant specialized in creating practice questions for ${activePrepSession.subject}, particularly ${activePrepSession.topic}. Provide detailed explanations with your answers and help the student understand concepts thoroughly.`}
             />

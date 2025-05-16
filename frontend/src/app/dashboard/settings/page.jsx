@@ -7,8 +7,8 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState({
     theme: 'light',
     notifications: true,
-    aiProvider: 'anthropic',
-    defaultModel: 'claude-3-opus',
+    aiProvider: 'deepseek',
+    defaultModel: '',
     language: 'en',
     fontSize: 'medium',
     emailNotifications: true,
@@ -21,7 +21,8 @@ export default function SettingsPage() {
   
   const aiProviders = [
     { id: 'anthropic', name: 'Anthropic Claude', models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'] },
-    { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'] }
+    { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'] },
+    { id: 'deepseek', name: 'deepseek', models: ''}
   ];
   
   // Load settings on mount

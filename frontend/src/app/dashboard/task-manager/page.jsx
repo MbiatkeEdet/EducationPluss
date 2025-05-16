@@ -231,8 +231,8 @@ export default function TaskManagerPage() {
               <div className="flex-1 overflow-hidden">
                 <ChatInterface 
                   chatId={activeTask.chatId}
-                  aiProvider="openai" 
-                  model="gpt-4o" 
+                  aiProvider="deepseek" 
+                  model="" 
                   placeholder="Ask for help with your task..."
                   systemContext={`You are a helpful task assistant. The user has the following task: "${activeTask.title}". Help them break down, plan, and complete this task effectively. Provide actionable advice, resources, and step-by-step guidance.`}
                   showChat={true}

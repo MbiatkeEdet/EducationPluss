@@ -114,8 +114,8 @@ export default function WritingHelpPage() {
               <div className="flex-1 overflow-hidden">
                 <ChatInterface 
                   initialMessage={initialMessage}
-                  aiProvider="anthropic" // Recommended for writing tasks
-                  model="claude-3-opus" // Best for high-quality writing assistance
+                  aiProvider="deepseek" // Recommended for writing tasks
+                  model="" // Best for high-quality writing assistance
                   placeholder="Ask follow-up questions here..."
                   systemContext={systemContext}
                 />

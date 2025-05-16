@@ -1,8 +1,9 @@
 // app/dashboard/study-tools/page.jsx
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ChatInterface from '@/components/ui/ChatInterface';
+import FlashcardDisplay from '@/components/ui/FlashcardDisplay';
 
 const studyTools = [
   {
@@ -10,7 +11,21 @@ const studyTools = [
     name: 'Flashcard Generator',
     description: 'Create study flashcards from your content',
     icon: '📇',
-    systemContext: 'You are a flashcard creation assistant. Help the user create effective study flashcards from their content. Format each flashcard as "Q: [question]\nA: [answer]" with a blank line between cards. Create comprehensive but concise flashcards that focus on key concepts.'
+    systemContext: `You are a flashcard creation assistant. Help the user create effective study flashcards from their content.
+    
+IMPORTANT FORMAT INSTRUCTIONS:
+1. Format each flashcard using this exact structure:
+   ### **Flashcard X**
+   **Front:** [Question text here]
+   **Back:** [Answer text here]
+
+2. Separate each flashcard with a line: ---
+
+3. Create 5-10 comprehensive but concise flashcards that focus on key concepts.
+
+4. Include images, bullet points, and formatting in the answers where helpful.
+
+5. Keep questions clear and straightforward.`
   },
   {
     id: 'notes',
@@ -47,11 +62,14 @@ export default function StudyToolsPage() {
   const [studyContent, setStudyContent] = useState('');
   const [initialMessage, setInitialMessage] = useState('');
   const [systemContext, setSystemContext] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
     setSystemContext(tool.systemContext);
     setInitialMessage(''); // Reset initial message when tool changes
+    setAiResponse(null); // Reset any previous responses
   };
   
   const handleStudyContentSubmit = (e) => {
@@ -59,10 +77,11 @@ export default function StudyToolsPage() {
     if (!studyContent.trim()) return;
     
     let message = '';
+    setIsProcessing(true);
     
     switch (selectedTool.id) {
       case 'flashcards':
-        message = `Please create study flashcards from this content:\n\n${studyContent}`;
+        message = `Please create study flashcards from this content. Format them exactly as specified in your instructions:\n\n${studyContent}`;
         break;
       case 'notes':
         message = `Please help me organize these notes into a well-structured study guide:\n\n${studyContent}`;
@@ -80,8 +99,14 @@ export default function StudyToolsPage() {
         message = studyContent;
     }
     
+    // Set the message to be sent
     setInitialMessage(message);
-    setStudyContent('');
+  };
+  
+  // Handler for AI responses
+  const handleAiResponse = (response) => {
+    setAiResponse(response);
+    setIsProcessing(false);
   };
   
   return (
@@ -145,22 +170,34 @@ export default function StudyToolsPage() {
                     </div>
                     <button
                       type="submit"
-                      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+                      disabled={isProcessing}
+                      className={`${isProcessing ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'} text-white px-4 py-2 rounded-lg flex items-center`}
                     >
-                      Process Content
+                      {isProcessing && (
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      )}
+                      {isProcessing ? 'Processing...' : 'Process Content'}
                     </button>
                   </form>
                 )}
               </div>
               
               <div className="flex-1 overflow-hidden">
-                <ChatInterface 
-                  initialMessage={initialMessage}
-                  aiProvider="openai" 
-                  model="gpt-4o"
-                  placeholder="Ask follow-up questions about your study material..."
-                  systemContext={systemContext}
-                />
+                {selectedTool.id === 'flashcards' && aiResponse ? (
+                  <FlashcardDisplay flashcards={aiResponse.content} />
+                ) : (
+                  <ChatInterface 
+                    initialMessage={initialMessage}
+                    aiProvider="deepseek" 
+                    model="deepseek-chat"
+                    placeholder="Ask follow-up questions about your study material..."
+                    systemContext={systemContext}
+                    onAiResponse={handleAiResponse}
+                  />
+                )}
               </div>
             </>
           ) : (
