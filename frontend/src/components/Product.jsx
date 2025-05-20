@@ -9,28 +9,28 @@ function Product() {
       icon: <FaRobot className="text-4xl text-indigo-500" />,
       title: "AI Writing Assistant",
       description: "Improve your essays, reports, and writing projects with AI-powered proofreading and suggestions.",
-      link: "/writing-help",
+      link: "/signup",
       color: "bg-indigo-50"
     },
     {
       icon: <FaTasks className="text-4xl text-purple-500" />,
       title: "Smart Task Planner",
       description: "Manage assignments, deadlines, and schedules with AI suggestions that adapt to your learning style.",
-      link: "/task-manager",
+      link: "/signup",
       color: "bg-purple-50"
     },
     {
       icon: <FaGraduationCap className="text-4xl text-blue-500" />,
       title: "Exam Prep & Quizzes",
       description: "Practice with AI-generated quizzes and personalized study plans tailored to your knowledge gaps.",
-      link: "/exam-prep",
+      link: "/signup",
       color: "bg-blue-50"
     },
     {
       icon: <FaCoins className="text-4xl text-yellow-500" />,
       title: "Crypto Rewards",
       description: "Earn tokens on the Solana blockchain for completing tasks and achieving your learning goals.",
-      link: "/rewards",
+      link: "/signup",
       color: "bg-yellow-50"
     }
   ];
