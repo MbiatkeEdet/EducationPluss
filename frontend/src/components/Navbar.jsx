@@ -20,7 +20,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center">
           <div className="relative h-10 w-36">
             <Image
-              src="/logo7.jpg"
+              src="/logo7.png"
               alt="Education+ Logo"
               
               className="object-contain"
