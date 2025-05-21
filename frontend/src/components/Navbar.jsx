@@ -8,7 +8,7 @@ export default function Navbar() {
 
   const navItems = [
     { text: "AI Features", href: "/features" },
-    { text: "Documentation", href: "/documentation" },
+    { text: "Roadmap", href: "/roadmap" },
     { text: "Rewards", href: "/rewards" },
     { text: "Community", href: "/community" }
   ];
@@ -24,8 +24,8 @@ export default function Navbar() {
               alt="Education+ Logo"
               
               className="object-contain"
-              width={100}
-              height={100}
+              width={80}
+              height={80}
               priority
             />
           </div>
