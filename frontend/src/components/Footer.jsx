@@ -13,10 +13,10 @@ export default function Footer() {
     {
       title: "Product",
       links: [
-        { text: "AI Writing Help", href: "/writing-help" },
-        { text: "Task Manager", href: "/task-manager" },
-        { text: "Study Tools", href: "/study-tools" },
-        { text: "Exam Prep", href: "/exam-prep" },
+        { text: "AI Writing Help", href: "/signup" },
+        { text: "Task Manager", href: "/signup" },
+        { text: "Study Tools", href: "/signup" },
+        { text: "Exam Prep", href: "/signup" },
       ]
     },
     {
@@ -31,7 +31,7 @@ export default function Footer() {
     {
       title: "Resources",
       links: [
-        { text: "Documentation", href: "/documentation" },
+        { text: "Roadmap", href: "/roadmap" },
         { text: "Help Center", href: "/help" },
         { text: "Community", href: "/community" },
         { text: "Privacy Policy", href: "/privacy-policy" },
