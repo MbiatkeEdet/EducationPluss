@@ -31,13 +31,13 @@ import Navbar from "@/components/Navbar";
   
 export default function RoadmapPage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="bg-indigo-900 min-h-screen sm:px-6 lg:px-8 py-8 sm:py-12">
 
       <Navbar />
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 mt-7 sm:mb-8 text-center sm:text-left">🚀 ROAD-MAP</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6 mt-7 flex flex-col items-center text-black sm:mb-8 text-center sm:text-left">🚀 ROAD-MAP</h1>
 
-      <section className="mb-10 sm:mb-12">
-        <h2 className="text-4xl sm:text-2xl font-semibold mb-3 text-blue-700">Phase 1: MVP (Minimum Viable Product)</h2>
+      <section className="mb-10 sm:mb-12 flex flex-col items-center">
+        <h2 className="text-4xl sm:text-2xl font-semibold mb-3 text-black">Phase 1: MVP (Minimum Viable Product)</h2>
         <p className="mb-2 text-sm sm:text-base">Goal: Launch a lean, functional version to validate core demand and gather early feedback.</p>
         <h3 className="text-xl text-blue-400 sm:text-xl font-bold mt-4 mb-2 italic font-serif">✅ Core Features</h3>
         <ul className="list-disc list-inside space-y-2 text-sm sm:text-base">
@@ -53,8 +53,8 @@ export default function RoadmapPage() {
         </ul>
       </section>
 
-      <section className="mb-10 sm:mb-12">
-        <h2 className="text-4xl text-blue-700 sm:text-2xl font-semibold mb-3">🧩 Phase 2: Full Launch</h2>
+      <section className="mb-10 sm:mb-12 flex flex-col items-center">
+        <h2 className="text-4xl text-black sm:text-2xl font-semibold mb-3">🧩 Phase 2: Full Launch</h2>
         <p className="mb-2 text-sm sm:text-base">Goal: Build full platform value, drive engagement, and prepare for partnerships or B2B pitch.</p>
         <h3 className="text-xl italic font-serif text-blue-400 sm:text-xl font-bold mt-4 mb-2">💡 Feature Additions</h3>
         <ul className="list-disc list-inside space-y-2 text-sm sm:text-base">
@@ -72,9 +72,9 @@ export default function RoadmapPage() {
         </ul>
       </section>
 
-      <section>
-        <h2 className="text-4xl text-blue-700 sm:text-2xl font-bold mb-3">🧠 Phase 3: V2 Expansion</h2>
-        <p className="mb-2 text-sm sm:text-base">Goal: Scale the platform, expand into partnerships, and offer institutional-level tools.</p>
+      <section className="mb-10 sm:mb-12 flex flex-col items-center">
+        <h2 className="text-4xl text-black sm:text-2xl font-bold mb-3">🧠 Phase 3: V2 Expansion</h2>
+        <p className="mb-2 text-xl font-bold sm:text-base">Goal: Scale the platform, expand into partnerships, and offer institutional-level tools.</p>
         <h3 className="text-xl italic font-serif text-blue-400 sm:text-xl font-bold mt-4 mb-2">🌍 Expansion Features</h3>
         <ul className="list-disc list-inside space-y-2 text-sm sm:text-base">
           <li><strong>Offline Support / Lightweight Mobile App:</strong> AI tools work offline or on low bandwidth.</li>

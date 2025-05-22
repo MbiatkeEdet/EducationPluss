@@ -27,13 +27,13 @@ export default function DashboardLayout({ children }) {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    router.push('/login');
+    router.push('/');
   };
   
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
-      <div className="w-64 bg-indigo-800 text-white flex flex-col">
+      <div className="w-64 bg-indigo-800 text-white flex flex-col h-full">
         <div className="p-5">
           <h1 className="text-2xl font-bold">Education +</h1>
         </div>
