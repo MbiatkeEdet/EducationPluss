@@ -1,7 +1,7 @@
 // lib/api.js
 export class ApiClient {
     constructor() {
-      this.baseUrl = 'http://localhost:3002/api';
+      this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
     }
     
     async sendMessage(content, chatId = null, aiProvider = null, model = null) {
