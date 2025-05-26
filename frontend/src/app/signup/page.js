@@ -42,7 +42,7 @@ export default function SignUp() {
       // Remove confirmPassword before sending to backend
       const { confirmPassword, ...dataToSend } = formData;
       
-      const response = await fetch("http://localhost:3002/api/auth/register", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export default function SignUp() {
             <Link href="/">
               <div className="relative h-12 w-44">
                 <Image
-                  src="/logo7.jpg"
+                  src="/logo7.png"
                   alt="Education+"
                   fill
                   className="object-contain"
