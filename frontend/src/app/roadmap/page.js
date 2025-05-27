@@ -38,7 +38,7 @@ export default function RoadmapPage() {
 
       <section className="mb-10 sm:mb-12 flex flex-col items-center">
         <h2 className="text-4xl sm:text-2xl font-semibold mb-3 text-black">Phase 1: MVP (Minimum Viable Product)</h2>
-        <p className="mb-2 text-sm sm:text-base">Goal: Launch a lean, functional version to validate core demand and gather early feedback.</p>
+        <p className="mb-2 text-2xl sm:text-2xl italic font-serif text-black font-bold">Goal: Launch a lean, functional version to validate core demand and gather early feedback.</p>
         <h3 className="text-xl text-blue-400 sm:text-xl font-bold mt-4 mb-2 italic font-serif">✅ Core Features</h3>
         <ul className="list-disc list-inside space-y-2 text-sm sm:text-base">
           <li><strong>User Authentication & Profiles:</strong> Students sign up and set preferences (subjects, level).</li>

@@ -2,7 +2,7 @@ import {
   FaFacebook,
   FaInstagram,
   FaLinkedin,
-  FaYoutube,
+  FaTelegram ,
 } from "react-icons/fa6";
 import { BsTwitterX } from "react-icons/bs";
 import Link from "next/link";
@@ -44,7 +44,7 @@ export default function Footer() {
     { icon: <BsTwitterX />, href: "https://www.twitter.com/@Ed_Plus_" },
     { icon: <FaInstagram />, href: "https://www.instagram.com" },
     { icon: <FaFacebook />, href: "https://www.facebook.com" },
-    { icon: <FaYoutube />, href: "https://www.youtube.com" },
+    { icon: <FaTelegram  />, href: "https://t.me/educationplus567" },
   ];
 
   return (
