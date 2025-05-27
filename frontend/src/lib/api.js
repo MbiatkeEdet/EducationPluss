@@ -184,6 +184,89 @@ export class ApiClient {
         throw error;
       }
     }
+
+    // EPlus Balance and Rewards
+    async getEPlusBalance() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      try {
+        const response = await fetch(`${this.baseUrl}/eplus/balance`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch EPlus balance');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('API error:', error);
+        throw error;
+      }
+    }
+
+    async getRewardStats() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      try {
+        const response = await fetch(`${this.baseUrl}/eplus/stats`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch reward stats');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('API error:', error);
+        throw error;
+      }
+    }
+
+    async processDailyLogin() {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      try {
+        const response = await fetch(`${this.baseUrl}/eplus/daily-login`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to process daily login');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('API error:', error);
+        throw error;
+      }
+    }
   }
   
   export default new ApiClient();
