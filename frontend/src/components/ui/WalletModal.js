@@ -135,7 +135,7 @@ export default function WalletModal({ isOpen, onClose, onWalletConnected }) {
                 disabled={isLoading}
               />
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                This address will be used to receive your EDU tokens
+                This address will be used to receive your EPlus tokens
               </p>
             </div>
 
