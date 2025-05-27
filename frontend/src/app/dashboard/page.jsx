@@ -4,12 +4,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { PlusCircle, Clock, Award, BookOpen, ListChecks, Brain, GraduationCap, Wallet } from 'lucide-react';
+import { PlusCircle, Code, Award, BookOpen, ListChecks, Brain, GraduationCap, Wallet } from 'lucide-react';
+import WalletModal from '@/components/ui/WalletModal';
 
 export default function DashboardHomePage() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [walletConnected, setWalletConnected] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
   const [totalRewards, setTotalRewards] = useState(0);
   const [stats, setStats] = useState({
     tasksCompleted: 0,
@@ -20,7 +22,7 @@ export default function DashboardHomePage() {
   const [recentActivity, setRecentActivity] = useState([]);
   const [upcomingTasks, setUpcomingTasks] = useState([]);
   
-  // Check for authentication
+  // Check for authentication and wallet connection
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
@@ -31,7 +33,18 @@ export default function DashboardHomePage() {
     }
     
     if (userData) {
-      setUser(JSON.parse(userData));
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+      
+      // Check if wallet is connected from user data
+      if (parsedUser.solanaWallet && parsedUser.walletVerified) {
+        setWalletConnected(true);
+      }
+      
+      // Set total rewards from user's EDU claim or activity metrics
+      if (parsedUser.eduClaim && parsedUser.eduClaim.claimedAmount) {
+        setTotalRewards(parsedUser.eduClaim.claimedAmount);
+      }
     }
     
     // Load stats and activities
@@ -57,9 +70,11 @@ export default function DashboardHomePage() {
       writingProjects: Math.floor(Math.random() * 5) + 1 // Placeholder for writing projects
     });
     
-    // Generate total rewards based on activity (placeholder for actual reward calculation)
-    const calculatedRewards = completedTasks * 5 + examSessions.length * 8;
-    setTotalRewards(calculatedRewards);
+    // Generate total rewards based on activity if not set from user data
+    if (!user?.eduClaim?.claimedAmount) {
+      const calculatedRewards = completedTasks * 5 + examSessions.length * 8;
+      setTotalRewards(calculatedRewards);
+    }
     
     // Set upcoming tasks (tasks not completed)
     const pendingTasks = tasks
@@ -96,8 +111,33 @@ export default function DashboardHomePage() {
   };
   
   const handleConnectWallet = () => {
-    // Placeholder for wallet connection functionality
+    setShowWalletModal(true);
+  };
+
+  const handleWalletConnected = (address) => {
+    // Update user data with new wallet
+    const updatedUser = { 
+      ...user, 
+      solanaWallet: address, 
+      walletVerified: true 
+    };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
     setWalletConnected(true);
+    setShowWalletModal(false);
+  };
+
+  const handleRewardsClick = () => {
+    if (walletConnected) {
+      router.push('/dashboard/rewards');
+    } else {
+      setShowWalletModal(true);
+    }
+  };
+
+  const formatAddress = (address) => {
+    if (!address) return '';
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
   
   const formatDate = (dateString) => {
@@ -158,11 +198,25 @@ export default function DashboardHomePage() {
     },
     {
       title: 'Study Tools',
-      description: 'Create flashcards, notes, and summaries',
+      description: 'Flashcards, notes, summaries, and mind maps',
       icon: <Brain size={24} />,
       color: 'bg-purple-100 text-purple-600',
-      link: '/dashboard/study-tools',
+      submenu: [
+        { name: 'Flashcard Generator', link: '/dashboard/study-tools?tool=flashcards', icon: '📇' },
+        { name: 'Note Organizer', link: '/dashboard/study-tools?tool=notes', icon: '📝' },
+        { name: 'Content Summarizer', link: '/dashboard/study-tools?tool=summarizer', icon: '📄' },
+        { name: 'Mind Map Creator', link: '/dashboard/study-tools?tool=mindmap', icon: '🗺️' },
+        { name: 'Concept Explainer', link: '/dashboard/study-tools?tool=explain', icon: '💡' }
+      ],
       stat: `${stats.studyHours} study hours`
+    },
+    {
+      title: 'Code Generator',
+      description: 'Generate code with implementation steps',
+      icon: <Code size={24} />,
+      color: 'bg-slate-100 text-slate-600',
+      link: '/dashboard/code-generator',
+      stat: 'AI-powered coding'
     },
     {
       title: 'Exam Prep',
@@ -187,8 +241,11 @@ export default function DashboardHomePage() {
           </p>
         </div>
         
-        {/* Rewards section */}
-        <div className="mt-4 md:mt-0 bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4">
+        {/* Updated Rewards section */}
+        <div 
+          onClick={handleRewardsClick}
+          className="mt-4 md:mt-0 bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center space-x-4 cursor-pointer hover:shadow-md transition-shadow"
+        >
           <div className="bg-indigo-100 p-3 rounded-lg">
             <Award className="h-6 w-6 text-indigo-600" />
           </div>
@@ -201,17 +258,22 @@ export default function DashboardHomePage() {
           </div>
           {!walletConnected ? (
             <button 
-              onClick={handleConnectWallet}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleConnectWallet();
+              }}
               className="ml-2 px-3 py-1 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 flex items-center"
             >
               <Wallet size={14} className="mr-1" />
               Connect
             </button>
           ) : (
-            <span className="ml-2 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-lg flex items-center">
+            <div className="ml-2 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-lg flex items-center">
               <Wallet size={14} className="mr-1" />
-              Connected
-            </span>
+              <span className="font-mono text-xs">
+                {formatAddress(user?.solanaWallet)}
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -236,22 +298,50 @@ export default function DashboardHomePage() {
         {/* Main tools grid - takes 2/3 of the space on large screens */}
         <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
           {toolCards.map((card, index) => (
-            <Link
-              key={index}
-              href={card.link}
-              className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col hover:shadow-md transition"
-            >
-              <div className="flex items-center mb-4">
-                <div className={`p-3 rounded-lg ${card.color}`}>
-                  {card.icon}
+            <div key={index}>
+              {card.submenu ? (
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col hover:shadow-md transition">
+                  <div className="flex items-center mb-4">
+                    <div className={`p-3 rounded-lg ${card.color}`}>
+                      {card.icon}
+                    </div>
+                    <h3 className="ml-3 text-lg font-medium">{card.title}</h3>
+                  </div>
+                  <p className="text-gray-600 mb-4">{card.description}</p>
+                  <div className="space-y-2 mb-4">
+                    {card.submenu.map((item, subIndex) => (
+                      <Link
+                        key={subIndex}
+                        href={item.link}
+                        className="flex items-center p-2 rounded-lg hover:bg-gray-50 text-sm"
+                      >
+                        <span className="mr-2">{item.icon}</span>
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                  <div className="mt-auto pt-4 border-t border-gray-100">
+                    <span className="text-sm font-medium text-gray-700">{card.stat}</span>
+                  </div>
                 </div>
-                <h3 className="ml-3 text-lg font-medium">{card.title}</h3>
-              </div>
-              <p className="text-gray-600 mb-4">{card.description}</p>
-              <div className="mt-auto pt-4 border-t border-gray-100">
-                <span className="text-sm font-medium text-gray-700">{card.stat}</span>
-              </div>
-            </Link>
+              ) : (
+                <Link
+                  href={card.link}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col hover:shadow-md transition"
+                >
+                  <div className="flex items-center mb-4">
+                    <div className={`p-3 rounded-lg ${card.color}`}>
+                      {card.icon}
+                    </div>
+                    <h3 className="ml-3 text-lg font-medium">{card.title}</h3>
+                  </div>
+                  <p className="text-gray-600 mb-4">{card.description}</p>
+                  <div className="mt-auto pt-4 border-t border-gray-100">
+                    <span className="text-sm font-medium text-gray-700">{card.stat}</span>
+                  </div>
+                </Link>
+              )}
+            </div>
           ))}
         </div>
         
@@ -332,7 +422,7 @@ export default function DashboardHomePage() {
             )}
           </div>
           
-          {/* Rewards section */}
+          {/* Updated Rewards section */}
           <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-5 rounded-xl shadow-sm text-white">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-medium">Learning Rewards</h3>
@@ -359,19 +449,29 @@ export default function DashboardHomePage() {
                 Connect Wallet to Claim
               </button>
             ) : (
-              <div className="flex justify-between items-center bg-indigo-600 p-3 rounded-lg">
+              <div 
+                onClick={handleRewardsClick}
+                className="flex justify-between items-center bg-indigo-600 p-3 rounded-lg cursor-pointer hover:bg-indigo-700 transition"
+              >
                 <div>
                   <p className="text-sm text-indigo-200">Available to claim</p>
                   <p className="text-xl font-bold">{totalRewards} EDU</p>
                 </div>
                 <button className="px-3 py-1 bg-white text-indigo-600 rounded-lg text-sm font-medium">
-                  Claim
+                  View Details
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
+
+      {/* Wallet Modal */}
+      <WalletModal 
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        onWalletConnected={handleWalletConnected}
+      />
     </div>
   );
 }

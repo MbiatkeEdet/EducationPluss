@@ -1,10 +1,10 @@
 // lib/api.js
 export class ApiClient {
     constructor() {
-      this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+      this.baseUrl = process.env.NEXT_PUBLIC_API_URL;
     }
     
-    async sendMessage(content, chatId = null, aiProvider = null, model = null) {
+    async sendMessage(content, chatId = null, aiProvider = null, model = null, systemContext = undefined, feature = null, subFeature = null) {
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -22,7 +22,10 @@ export class ApiClient {
             content,
             chatId,
             aiProvider,
-            model
+            model,
+            systemContext,
+            feature,        // e.g., 'study-tools', 'writing-help', 'code-generator'
+            subFeature      // e.g., 'flashcards', 'notes', 'summarizer'
           })
         });
         
@@ -139,6 +142,40 @@ export class ApiClient {
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || 'Failed to update chat category');
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error('API error:', error);
+        throw error;
+      }
+    }
+    
+    // Add method to get chat history by feature
+    async getChatsByFeature(feature, subFeature = null, page = 1, limit = 10) {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      try {
+        const params = new URLSearchParams({ 
+          feature,
+          page: page.toString(),
+          limit: limit.toString()
+        });
+        if (subFeature) params.append('subFeature', subFeature);
+        
+        const response = await fetch(`${this.baseUrl}/chat/chat-history?${params}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to fetch chat history');
         }
         
         return await response.json();
