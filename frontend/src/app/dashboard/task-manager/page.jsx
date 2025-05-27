@@ -236,6 +236,9 @@ export default function TaskManagerPage() {
                   placeholder="Ask for help with your task..."
                   systemContext={`You are a helpful task assistant. The user has the following task: "${activeTask.title}". Help them break down, plan, and complete this task effectively. Provide actionable advice, resources, and step-by-step guidance.`}
                   showChat={true}
+                  initialMessage={taskPrompt}
+                  feature="task-manager"              // Add feature
+                  subFeature="help"                   // Add subFeature
                 />
               </div>
             </>

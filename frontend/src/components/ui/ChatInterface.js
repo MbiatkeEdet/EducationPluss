@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import apiClient from '@/lib/api'; // Adjust the import based on your project structure
+import { cleanMessageForDisplay } from '@/lib/messageUtils';
 
 export default function ChatInterface({ 
   initialMessage = '', 
@@ -12,7 +13,10 @@ export default function ChatInterface({
   placeholder = 'Type your message...',
   systemContext = '',
   showChat = true,
-  onAiResponse = null
+  onAiResponse = null,
+  formatInstructions = '',
+  feature = null,
+  subFeature = null        
 }) {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
@@ -22,16 +26,39 @@ export default function ChatInterface({
   const [messageSent, setMessageSent] = useState(false);
   const messagesEndRef = useRef(null);
   
+  // Enhance the system context with formatting instructions based on tool type
+  const getEnhancedSystemContext = () => {
+    // Base context
+    let enhancedContext = systemContext;
+    
+    // Add generic formatting instructions if none provided specifically
+    if (!formatInstructions) {
+      enhancedContext += `
+
+RESPONSE FORMATTING GUIDELINES:
+- Use proper Markdown formatting in all responses
+- For code snippets, use triple backticks with the language identifier (e.g., \`\`\`html, \`\`\`jsx, \`\`\`css)
+- For important points, use **bold** formatting
+- For lists, use proper Markdown bullet points or numbered lists
+- For hierarchical content, use proper heading levels (# for main headings, ## for subheadings)`;
+    } else {
+      // Add custom format instructions if provided
+      enhancedContext += "\n\n" + formatInstructions;
+    }
+    
+    return enhancedContext;
+  };
+  
   useEffect(() => {
     if (currentChatId) {
       fetchChatHistory();
     } else if (initialMessage && systemContext) {
-      // For new chats with system context, add it silently
+      // For new chats with system context, add it silently with enhanced formatting
       setChatHistory([
-        { role: 'system', content: systemContext, timestamp: Date.now() }
+        { role: 'system', content: getEnhancedSystemContext(), timestamp: Date.now() }
       ]);
     }
-  }, [currentChatId]);
+  }, [currentChatId, systemContext]);
   
   useEffect(() => {
     // Scroll to bottom of chat whenever history changes
@@ -75,33 +102,11 @@ export default function ChatInterface({
   const handleSendMessage = async (e, explicitMessage = null) => {
     e.preventDefault();
     
-    // Use the explicit message if provided, otherwise use the input field value
     const userMessage = explicitMessage || message.trim();
-    
     if (!userMessage) return;
-    
-    // For display purposes, extract just user content when the message includes a system prompt
-    let displayMessage = userMessage;
-    
-    // Check for common patterns in study tools and writing help sections
-    const prefixesToStrip = [
-      "Please help me organize these notes into a well-structured study guide:\n\n",
-      "Please summarize this content for study purposes:\n\n",
-      "Please create a mind map based on this content:\n\n",
-      "Please explain these concepts in a simple, clear way:\n\n",
-      "Please create study flashcards from this content. Format them exactly as specified in your instructions:\n\n",
-      "Please help me paraphrase the following text: ",
-      "I need help with my research on ",
-      "I need help writing an essay about "
-    ];
-    
-    // Strip prefix if it exists
-    for (const prefix of prefixesToStrip) {
-      if (userMessage.startsWith(prefix)) {
-        displayMessage = userMessage.substring(prefix.length);
-        break;
-      }
-    }
+
+    // Replace the existing cleanUserMessage function with the imported utility
+    const displayMessage = cleanMessageForDisplay(userMessage);
     
     // Add user message to chat history immediately for UI feedback
     const updatedChatHistory = [...chatHistory, { 
@@ -116,12 +121,19 @@ export default function ChatInterface({
     setIsLoading(true);
     setError(null);
     
+    // If this is first message and we have system context, ensure it's enhanced
+    const needsSystemContext = !currentChatId && 
+      !chatHistory.some(msg => msg.role === 'system' && msg.content.includes(getEnhancedSystemContext()));
+    
     try {
       const response = await apiClient.sendMessage(
-        userMessage, // Send the full original message to API
+        userMessage,
         currentChatId,
         aiProvider,
-        model
+        model,
+        needsSystemContext ? getEnhancedSystemContext() : undefined,
+        feature,      // Pass feature
+        subFeature    // Pass subFeature
       );
       
       // Update with the server response

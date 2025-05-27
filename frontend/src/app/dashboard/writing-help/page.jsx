@@ -3,6 +3,10 @@
 
 import { useState } from 'react';
 import ChatInterface from '@/components/ui/ChatInterface';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Copy, Check } from 'lucide-react';
 
 const writingTools = [
   { 
@@ -40,11 +44,14 @@ export default function WritingHelpPage() {
   const [customInput, setCustomInput] = useState('');
   const [initialMessage, setInitialMessage] = useState('');
   const [systemContext, setSystemContext] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [copiedStates, setCopiedStates] = useState({});
   
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
     setSystemContext(tool.systemContext);
     setInitialMessage(''); // Reset initial message when tool changes
+    setAiResponse(null); // Clear previous response
   };
   
   const handlePromptSubmit = (e) => {
@@ -53,6 +60,120 @@ export default function WritingHelpPage() {
     
     setInitialMessage(selectedTool.prompt + customInput);
     setCustomInput('');
+  };
+
+  const handleAiResponse = (response) => {
+    setAiResponse(response);
+  };
+
+  const copyToClipboard = async (text, id = 'main') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedStates(prev => ({ ...prev, [id]: true }));
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [id]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
+
+  // Custom components for markdown rendering
+  const MarkdownComponents = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || '');
+      return !inline && match ? (
+        <div className="relative">
+          <button
+            onClick={() => copyToClipboard(String(children), `code-${node.position?.start.line}`)}
+            className="absolute top-2 right-2 p-1 bg-gray-700 hover:bg-gray-600 rounded text-white text-xs"
+            title="Copy code"
+          >
+            {copiedStates[`code-${node.position?.start.line}`] ? (
+              <Check size={12} />
+            ) : (
+              <Copy size={12} />
+            )}
+          </button>
+          <SyntaxHighlighter
+            style={tomorrow}
+            language={match[1]}
+            PreTag="div"
+            {...props}
+          >
+            {String(children).replace(/\n$/, '')}
+          </SyntaxHighlighter>
+        </div>
+      ) : (
+        <code className="bg-gray-100 px-1 py-0.5 rounded text-sm font-mono" {...props}>
+          {children}
+        </code>
+      );
+    },
+    h1: ({ children }) => <h1 className="text-3xl font-bold mb-4 text-gray-800 border-b pb-2">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-2xl font-semibold mb-3 mt-6 text-gray-800">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-semibold mb-2 mt-4 text-gray-700">{children}</h3>,
+    h4: ({ children }) => <h4 className="text-lg font-medium mb-2 mt-3 text-gray-700">{children}</h4>,
+    p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+    li: ({ children }) => <li className="text-gray-700">{children}</li>,
+    blockquote: ({ children }) => (
+      <blockquote className="border-l-4 border-indigo-500 pl-4 py-2 mb-4 bg-indigo-50 italic">
+        {children}
+      </blockquote>
+    ),
+    strong: ({ children }) => <strong className="font-semibold text-gray-800">{children}</strong>,
+    em: ({ children }) => <em className="italic text-gray-600">{children}</em>,
+    hr: () => <hr className="my-6 border-gray-300" />,
+    table: ({ children }) => (
+      <div className="overflow-x-auto mb-4">
+        <table className="min-w-full border border-gray-300">{children}</table>
+      </div>
+    ),
+    thead: ({ children }) => <thead className="bg-gray-50">{children}</thead>,
+    tbody: ({ children }) => <tbody>{children}</tbody>,
+    tr: ({ children }) => <tr className="border-b border-gray-200">{children}</tr>,
+    th: ({ children }) => <th className="px-4 py-2 text-left font-semibold text-gray-700">{children}</th>,
+    td: ({ children }) => <td className="px-4 py-2 text-gray-700">{children}</td>,
+  };
+
+  const renderFormattedResponse = () => {
+    if (!aiResponse) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">AI Response</h3>
+            <button
+              onClick={() => copyToClipboard(aiResponse.content)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.main ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {aiResponse.content}
+            </ReactMarkdown>
+          </div>
+        </div>
+      </div>
+    );
   };
   
   return (
@@ -84,7 +205,7 @@ export default function WritingHelpPage() {
           </div>
         </div>
         
-        {/* Main chat area */}
+        {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedTool ? (
             <>
@@ -111,14 +232,39 @@ export default function WritingHelpPage() {
                   </button>
                 </form>
               </div>
+              
               <div className="flex-1 overflow-hidden">
-                <ChatInterface 
-                  initialMessage={initialMessage}
-                  aiProvider="deepseek" // Recommended for writing tasks
-                  model="" // Best for high-quality writing assistance
-                  placeholder="Ask follow-up questions here..."
-                  systemContext={systemContext}
-                />
+                {aiResponse ? (
+                  <div className="h-full overflow-y-auto p-6 bg-gray-50">
+                    {renderFormattedResponse()}
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Continue the conversation:</h4>
+                      <div className="bg-white rounded-lg border">
+                        <ChatInterface 
+                          initialMessage=""
+                          aiProvider="deepseek"
+                          model="deepseek-chat"
+                          placeholder="Ask follow-up questions here..."
+                          systemContext={systemContext}
+                          feature="writing-help"
+                          subFeature={selectedTool?.id}
+                          showChat={true}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <ChatInterface 
+                    initialMessage={initialMessage}
+                    aiProvider="deepseek"
+                    model="deepseek-chat"
+                    placeholder="Ask follow-up questions here..."
+                    systemContext={systemContext}
+                    feature="writing-help"
+                    subFeature={selectedTool?.id}
+                    onAiResponse={handleAiResponse}
+                  />
+                )}
               </div>
             </>
           ) : (

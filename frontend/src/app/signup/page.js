@@ -41,8 +41,9 @@ export default function SignUp() {
     try {
       // Remove confirmPassword before sending to backend
       const { confirmPassword, ...dataToSend } = formData;
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL
       
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/register`, {
+      const response = await fetch(`${baseUrl}/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
