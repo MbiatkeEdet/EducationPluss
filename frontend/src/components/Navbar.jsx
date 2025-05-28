@@ -7,30 +7,6 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems = [
-<<<<<<< HEAD:src/components/Navbar.jsx
-    { text: "Home", href: "/"},
-    { text: "Documentation", href: "/documentation" },
-    { text: "Writing Help", href: "/writing-help" }, // Fixed space issue
-    { text: "Task Manager", href: "/task-manager" },
-    { text: "Study Tools", href: "/study-tools" },
-    { text: "Exam Prep", href: "/exam-prep" },
-    { text: "Settings", href: "/settings"}
-  ];
-
-  return (
-    <header className="text-yellow-300 italic font-serif bg-whitec:\Users\Mbiatke Edet\Desktop\logo3.png shadow-md">
-      <nav className="flex justify-between items-center py-4 px-4 md:px-12">
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo7.jpg"
-            alt="Education + Logo"
-            width={90}
-            height={90}
-            className="w-28 md:w-36 rounded-xl"
-            priority
-          />
-=======
     { text: "AI Features", href: "/features" },
     { text: "Roadmap", href: "/roadmap" },
     { text: "Rewards", href: "/rewards" },
@@ -53,7 +29,6 @@ export default function Navbar() {
               priority
             />
           </div>
->>>>>>> 4ae207040ae3c5521eb0c2520bbdb7e24ff0718b:frontend/src/components/Navbar.jsx
         </Link>
 
         {/* Desktop Navigation */}
