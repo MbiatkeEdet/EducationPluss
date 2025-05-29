@@ -33,7 +33,8 @@ export default function SettingsPage() {
         });
         
         if (response.ok) {
-          const userData = await response.json();
+          const userData1 = await response.json();
+          const userData = userData1.data
           setUser(userData);
           
           // Load user-specific settings

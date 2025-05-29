@@ -27,7 +27,9 @@ export default function ProfilePage() {
         });
         
         if (response.ok) {
-          const userData = await response.json();
+          const userData1 = await response.json();
+          const userData = userData1.data
+          console.log('User data fetched:', userData);
           setUser(userData);
           setFormData({
             name: userData.name || '',
