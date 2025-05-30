@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import ChatInterface from '@/components/ui/ChatInterface';
 import FlashcardDisplay from '@/components/ui/FlashcardDisplay';
@@ -73,7 +73,8 @@ IMPORTANT FORMAT INSTRUCTIONS:
   }
 ];
 
-export default function StudyToolsPage() {
+// Create a separate component that uses useSearchParams
+function StudyToolsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectedTool, setSelectedTool] = useState(null);
@@ -462,8 +463,8 @@ export default function StudyToolsPage() {
                     showChat={true}
                     onAiResponse={handleAiResponse}
                     formatInstructions={selectedTool?.outputFormat}
-                    feature="study-tools"              // Add feature
-                    subFeature={selectedTool?.id}      // Add subFeature (flashcards, notes, etc.)
+                    feature="study-tools"
+                    subFeature={selectedTool?.id}
                   />
                 )}
               </div>
@@ -482,5 +483,23 @@ export default function StudyToolsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense fallback
+function StudyToolsLoading() {
+  return (
+    <div className="h-full flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    </div>
+  );
+}
+
+// Main component wrapped with Suspense
+export default function StudyToolsPage() {
+  return (
+    <Suspense fallback={<StudyToolsLoading />}>
+      <StudyToolsContent />
+    </Suspense>
   );
 }
