@@ -138,9 +138,10 @@ export default function SignUp() {
             <Link href="/">
               <div className="relative h-12 w-44">
                 <Image
-                  src="/logo7.png"
+                  src="/logo12.png"
                   alt="Education+"
-                  fill
+                  width={176}
+                  height={176}
                   className="object-contain"
                   priority
                 />
@@ -149,8 +150,8 @@ export default function SignUp() {
           </div>
           
           {/* Title */}
-          <div className="text-center mb-2">
-            <h1 className="text-xl font-bold text-white">Create Account</h1>
+          <div className="text-center mt-8">
+            <h1 className="text-xl font-bold text-white mb-5">Create Account</h1>
             <p className="text-indigo-300 mt-2">Sign up to start your personalized learning experience</p>
           </div>
           

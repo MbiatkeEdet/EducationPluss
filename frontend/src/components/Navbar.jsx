@@ -24,8 +24,8 @@ export default function Navbar() {
               alt="Education+ Logo"
               
               className="object-contain"
-              width={100}
-              height={100}
+              width={176}
+              height={176}
               priority
             />
           </div>
