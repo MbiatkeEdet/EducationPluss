@@ -20,12 +20,12 @@ export default function Navbar() {
         <Link href="/" className="flex items-center">
           <div className="relative h-10 w-36">
             <Image
-              src="/logo7.png"
+              src="/logo12.png"
               alt="Education+ Logo"
               
               className="object-contain"
-              width={80}
-              height={80}
+              width={100}
+              height={100}
               priority
             />
           </div>
