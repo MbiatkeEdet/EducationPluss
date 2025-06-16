@@ -136,13 +136,13 @@ export default function SignUp() {
           {/* Logo */}
           <div className="flex justify-center mb-2">
             <Link href="/">
-              <div className="relative h-12 w-44">
+              <div className="relative h-10 w-36 md:h-12 md:w-40">
                 <Image
                   src="/logo12.png"
                   alt="Education+"
-                  width={176}
-                  height={176}
-                  className="object-contain"
+                  width={110}
+                  height={110}
+                  // className="object-contain"
                   priority
                 />
               </div>
@@ -151,7 +151,7 @@ export default function SignUp() {
           
           {/* Title */}
           <div className="text-center mt-8">
-            <h1 className="text-xl font-bold text-white mb-5">Create Account</h1>
+            <h1 className="text-xl font-bold text-white mb-5 mt-6">Create Account</h1>
             <p className="text-indigo-300 mt-2">Sign up to start your personalized learning experience</p>
           </div>
           

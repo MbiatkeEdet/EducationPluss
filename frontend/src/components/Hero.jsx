@@ -23,23 +23,19 @@ export default function Hero() {
           <h1 className="text-white font-bold text-3xl md:text-5xl lg:text-6xl leading-tight">
             AI-Powered Learning, <span className="text-yellow-400">Crypto Rewards</span>
           </h1>
-          <p className="text-gray-300 md:text-xl leading-relaxed">
+          <p className="text-gray-300 md:text-2xl leading-relaxed">
             Revolutionize your learning experience with our AI-driven toolkit. Master your studies, streamline your writing, and earn crypto rewards for achieving your educational goals.
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center md:justify-start items-center">
             <Link href="/signup">
-              <button className="px-6 py-3 rounded-xl bg-yellow-400 text-indigo-900 font-semibold hover:bg-yellow-300 transition">
+              <button className="px-6 py-3 ml-7 rounded-xl bg-yellow-400 text-indigo-900 font-semibold hover:bg-yellow-300 transition">
                 Get Started
               </button>
             </Link>
-            <Link href="/documentation">
-              <button className="px-6 py-3 rounded-xl border border-yellow-400 text-yellow-400 flex items-center gap-3 hover:bg-yellow-400 hover:text-indigo-900 transition">
-                Connect Wallet <FaAngleRight />
-              </button>
-            </Link>
+            
           </div>
           
-          <div className="pt-6 text-gray-400 text-sm">
+          <div className="pt-6 text-gray-400 text-sm mb-6">
             <p>Join over 10,000 students already achieving their academic goals</p>
           </div>
         </motion.div>

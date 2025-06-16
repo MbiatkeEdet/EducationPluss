@@ -58,9 +58,9 @@ export default function Footer() {
                 <Image
                   src="/logo12.png"
                   alt="Education+ logo"
-                  width={176}
-                  height={176}
-                  className="object-contain"
+                  width={100}
+                  height={100}
+                
                 />
               </div>
             </Link>
@@ -102,7 +102,7 @@ export default function Footer() {
 
         <div className="border-t border-indigo-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-indigo-300 text-sm">
-            ©2025 Education+ | All rights reserved.
+            ©2025 Finear | All rights reserved.
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link href="/terms" className="text-indigo-300 text-sm hover:text-white">

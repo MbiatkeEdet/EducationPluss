@@ -18,14 +18,14 @@ export default function Navbar() {
       <nav className="flex justify-between items-center py-4 px-6 md:px-12 max-w-7xl mx-auto">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <div className="relative h-10 w-36">
+          <div className="relative h-10 w-36 md:h-12 md:w-40">
             <Image
               src="/logo12.png"
               alt="Education+ Logo"
               
               className="object-contain"
-              width={176}
-              height={176}
+              width={150}
+              height={150}
               priority
             />
           </div>

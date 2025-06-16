@@ -9,7 +9,7 @@ export default function Services() {
     {
       quote: "Education+ helped me improve my GPA from 3.2 to 3.8 in just one semester. The AI writing assistance and study tools are incredible!",
       name: "Alex Johnson",
-      title: "Computer Science Student",
+      title: "FIN fuels",
       avatar: "https://thispersondoesnotexist.com/"
     },
     {

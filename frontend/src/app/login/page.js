@@ -76,11 +76,12 @@ export default function Login() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <Link href="/">
-              <div className="relative h-12 w-44">
+              <div className="relative h-10 w-36 md:h-12 md:w-40">
                 <Image
                   src="/logo12.png"
                   alt="Education+"
-                  fill
+                  width={120}
+                  height={120}
                   className="object-contain"
                   priority
                 />
