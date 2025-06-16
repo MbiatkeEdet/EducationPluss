@@ -4,30 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 
 export default function Services() {
-  // Testimonials data
-  const testimonials = [
-    {
-      quote: "Education+ helped me improve my GPA from 3.2 to 3.8 in just one semester. The AI writing assistance and study tools are incredible!",
-      name: "Alex Johnson",
-      title: "FIN fuels",
-      avatar: "https://thispersondoesnotexist.com/"
-    },
-    {
-      quote: "I've earned over 200 tokens by completing my study goals. The motivation to earn while learning has transformed my study habits.",
-      name: "Mia Williams",
-      title: "Business Major",
-      avatar: "https://thispersondoesnotexist.com/"
-    },
-    {
-      quote: "The exam prep feature helped me ace my finals. The personalized quizzes identified exactly what I needed to focus on.",
-      name: "David Chen",
-      title: "Pre-Med Student",
-      avatar: "https://thispersondoesnotexist.com/"
-    }
-  ];
+  
 
   return (
-    <div className="bg-gradient-to-b from-indigo-50 to-white">
+    <div className="bg-gradient-to-b from-yellow-50 to-yellow-50">
       {/* How It Works Section */}
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto">
@@ -84,7 +64,7 @@ export default function Services() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-6 bg-indigo-900">
+      <section className="py-20 px-6 bg-gradient-to-b from-yellow-500 to-indigo-500">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -94,51 +74,16 @@ export default function Services() {
             viewport={{ once: true }}
           >
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              Student Success Stories
+              UTILITY
             </h2>
-            <p className="text-indigo-200 max-w-3xl mx-auto">
-              Hear from students who have transformed their academic journey with Education+
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">FIN TOKEN</h2>
+            <p className="text-indigo-200 text-2xl max-w-3xl mx-auto">
+              Launched fairly, FIN fuels our ecosystem, rewarding users for academic achievements and providing access to premium features.
+            </p>
+            <p className="text-indigo-200 text-2xl max-w-3xl mx-auto">
+              The FIN token is your key to unlocking exclusive features, content, and rewards within the Finear ecosystem.
             </p>
           </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                className="bg-indigo-800 p-6 rounded-xl shadow-lg"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2, duration: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <div className="mb-4 text-yellow-400">
-                  {/* Star rating */}
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-                <p className="text-white mb-6 italic">"{testimonial.quote}"</p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-indigo-600 overflow-hidden relative mr-3">
-                    <Image 
-                      src={testimonial.avatar} 
-                      alt={testimonial.name} 
-                      fill 
-                      className="object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">{testimonial.name}</p>
-                    <p className="text-indigo-300 text-sm">{testimonial.title}</p>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
 
           <motion.div
             className="text-center mt-12"
@@ -149,7 +94,7 @@ export default function Services() {
           >
             <Link href="/signup">
               <button className="px-8 py-3 bg-yellow-400 text-indigo-900 font-semibold rounded-lg hover:bg-yellow-300 transition">
-                Join Education+ Today
+                Join Finear Today
               </button>
             </Link>
           </motion.div>

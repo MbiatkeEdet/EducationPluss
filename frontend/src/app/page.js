@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Education+ | AI-Powered Learning with Crypto Rewards</title>
+        <title>Finear | AI-Powered Learning with Crypto Rewards</title>
         <meta name="description" content="Revolutionize your learning with AI-powered tools and earn crypto rewards for achieving your academic goals." />
       </Head>
       

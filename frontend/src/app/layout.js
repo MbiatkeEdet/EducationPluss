@@ -12,17 +12,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Education+ | AI-Powered Learning with Crypto Rewards",
+  title: "Finear | AI-Powered Learning with Crypto Rewards",
   keywords: "AI, education, crypto, rewards, learning, blockchain, study tools",
   authors: [{ name: "Sotonye McLeod Bob-Manuel" }],
   creator: "Sotonye McLeod Bob-Manuel,Mbiatke Mkanta, Chibuzor Ubaneche, ",
-  publisher: "Education+",
+  publisher: "Finear",
   description: "Revolutionize your learning with AI-powered tools and earn crypto rewards for achieving your academic goals.",
   openGraph: {
-    title: "Education+ | AI-Powered Learning with Crypto Rewards",
+    title: "Finear | AI-Powered Learning with Crypto Rewards",
     description: "Revolutionize your learning with AI-powered tools and earn crypto rewards for achieving your academic goals.",
-    url: "https://education-plus.com",
-    siteName: "Education+",
+    url: "https://finear.app",
+    siteName: "Finear",
     images: [
       {
         url: "/images/og-image.png",
