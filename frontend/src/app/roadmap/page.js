@@ -31,7 +31,7 @@ import Navbar from "@/components/Navbar";
   
 export default function RoadmapPage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <div className="flex flex-col items-center sm:px-6 lg:px-8 py-8 sm:py-12">
 
       <Navbar />
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 mt-7 sm:mb-8 text-center sm:text-left">🚀 ROAD-MAP</h1>

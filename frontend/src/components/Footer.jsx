@@ -7,6 +7,7 @@ import {
 import { BsTwitterX } from "react-icons/bs";
 import Link from "next/link";
 import Image from "next/image";
+import { FaTelegramPlane } from "react-icons/fa";
 
 export default function Footer() {
   const footerLinks = [
@@ -38,11 +39,10 @@ export default function Footer() {
   ];
 
   const socials = [
-    { icon: <FaLinkedin />, href: "https://www.linkedin.com" },
-    { icon: <BsTwitterX />, href: "https://www.twitter.com/@Ed_Plus_" },
-    { icon: <FaInstagram />, href: "https://www.instagram.com" },
-    { icon: <FaFacebook />, href: "https://www.facebook.com" },
-    { icon: <FaYoutube />, href: "https://www.youtube.com" },
+    { icon: <BsTwitterX />, href: "https://www.twitter.com/@Finear_app" },
+    { icon: <FaTelegramPlane />, href: "https://t.me/Finear_app" },
+
+
   ];
 
   return (
