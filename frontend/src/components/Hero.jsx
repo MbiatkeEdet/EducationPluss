@@ -28,7 +28,7 @@ export default function Hero() {
           </p>
           <div className="flex flex-col md:flex-row gap-4 justify-center md:justify-start items-center">
             <Link href="/signup">
-              <button className="px-6 py-3 ml-7 rounded-xl bg-yellow-400 text-indigo-900 font-semibold hover:bg-yellow-300 transition">
+              <button className="px-6 py-3 ml-9 rounded-xl bg-yellow-400 text-indigo-900 font-semibold hover:bg-yellow-300 transition">
                 Get Started
               </button>
             </Link>

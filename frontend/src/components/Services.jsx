@@ -64,7 +64,7 @@ export default function Services() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-yellow-500 to-indigo-500">
+      <section className="py-20 px-6 bg-gradient-to-b from-yellow-500 to-indigo-700">
         <div className="max-w-7xl mx-auto">
           <motion.div
             className="text-center mb-16"
@@ -76,12 +76,12 @@ export default function Services() {
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               UTILITY
             </h2>
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">FIN TOKEN</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">$FIN TOKEN</h2>
             <p className="text-indigo-200 text-2xl max-w-3xl mx-auto">
-              Launched fairly, FIN fuels our ecosystem, rewarding users for academic achievements and providing access to premium features.
+              Launched fairly, $FIN fuels our ecosystem, rewarding users for academic achievements and providing access to premium features.
             </p>
             <p className="text-indigo-200 text-2xl max-w-3xl mx-auto">
-              The FIN token is your key to unlocking exclusive features, content, and rewards within the Finear ecosystem.
+              The $FIN token is your key to unlocking exclusive features, content, and rewards within the Finear ecosystem.
             </p>
           </motion.div>
 

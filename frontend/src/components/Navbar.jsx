@@ -15,10 +15,10 @@ export default function Navbar() {
 
   return (
     <header className="bg-indigo-900/50 backdrop-blur-md border-b border-indigo-800/50">
-      <nav className="flex justify-between items-center py-4 px-6 md:px-12 max-w-7xl mx-auto">
+      <nav className="flex justify-between items-center py-2 px-2 md:px-12 max-w-7xl mx-auto">
         {/* Logo */}
         <Link href="/" className="flex items-center">
-          <div className="relative h-10 w-36 md:h-12 md:w-40">
+          <div className="">
             <Image
               src="/logo12.png"
               alt="Education+ Logo"
