@@ -136,12 +136,12 @@ export default function SignUp() {
           {/* Logo */}
           <div className="flex justify-center mb-2">
             <Link href="/">
-              <div className="relative h-10 w-36 md:h-12 md:w-40">
+              <div className="relative">
                 <Image
-                  src="/logo12.png"
-                  alt="Education+"
-                  width={110}
-                  height={110}
+                  src="/logo-main.png"
+                  alt="Finear"
+                  width={100}
+                  height={100}
                   // className="object-contain"
                   priority
                 />
@@ -150,9 +150,9 @@ export default function SignUp() {
           </div>
           
           {/* Title */}
-          <div className="text-center mt-8">
-            <h1 className="text-xl font-bold text-white mb-5 mt-6">Create Account</h1>
-            <p className="text-indigo-300 mt-2">Sign up to start your personalized learning experience</p>
+          <div className="text-center">
+            <h1 className="text-xl font-bold text-white">Create Account</h1>
+            <p className="text-indigo-300 m-2">Sign up to start your personalized learning experience</p>
           </div>
           
           {/* Form Card */}

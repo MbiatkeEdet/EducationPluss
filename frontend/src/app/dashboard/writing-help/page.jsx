@@ -45,6 +45,7 @@ export default function WritingHelpPage() {
   const [initialMessage, setInitialMessage] = useState('');
   const [systemContext, setSystemContext] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
+  const [followUpResponse, setFollowUpResponse] = useState(null);
   const [copiedStates, setCopiedStates] = useState({});
   
   const handleToolSelect = (tool) => {
@@ -52,6 +53,7 @@ export default function WritingHelpPage() {
     setSystemContext(tool.systemContext);
     setInitialMessage(''); // Reset initial message when tool changes
     setAiResponse(null); // Clear previous response
+    setFollowUpResponse(null); // Clear follow-up response when switching tools
   };
   
   const handlePromptSubmit = (e) => {
@@ -64,6 +66,10 @@ export default function WritingHelpPage() {
 
   const handleAiResponse = (response) => {
     setAiResponse(response);
+  };
+
+  const handleFollowUpResponse = (response) => {
+    setFollowUpResponse(response);
   };
 
   const copyToClipboard = async (text, id = 'main') => {
@@ -175,6 +181,44 @@ export default function WritingHelpPage() {
       </div>
     );
   };
+
+  const renderFormattedFollowUpResponse = () => {
+    if (!followUpResponse) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">Follow-up Response</h3>
+            <button
+              onClick={() => copyToClipboard(followUpResponse.content, 'followup')}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.followup ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {followUpResponse.content}
+            </ReactMarkdown>
+          </div>
+        </div>
+      </div>
+    );
+  };
   
   return (
     <div className="h-full flex flex-col">
@@ -237,6 +281,7 @@ export default function WritingHelpPage() {
                 {aiResponse ? (
                   <div className="h-full overflow-y-auto p-6 bg-gray-50">
                     {renderFormattedResponse()}
+                    {renderFormattedFollowUpResponse()}
                     <div className="mt-6">
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Continue the conversation:</h4>
                       <div className="bg-white rounded-lg border">
@@ -249,6 +294,8 @@ export default function WritingHelpPage() {
                           feature="writing-help"
                           subFeature={selectedTool?.id}
                           showChat={true}
+                          hideAiResponse={true}
+                          onAiResponse={handleFollowUpResponse}
                         />
                       </div>
                     </div>

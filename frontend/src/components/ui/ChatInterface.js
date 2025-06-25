@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import apiClient from '@/lib/api'; // Adjust the import based on your project structure
-import { cleanMessageForDisplay } from '@/lib/messageUtils';
+import { cleanMessageForDisplay, extractUserContent } from '@/lib/messageUtils';
 
 export default function ChatInterface({ 
   initialMessage = '', 
@@ -90,7 +90,17 @@ RESPONSE FORMATTING GUIDELINES:
     try {
       setIsLoading(true);
       const response = await apiClient.getChat(currentChatId);
-      setChatHistory(response.data.messages);
+      // Clean user messages when loading chat history
+      const cleanedMessages = response.data.messages.map(msg => {
+        if (msg.role === 'user') {
+          return {
+            ...msg,
+            content: extractUserContent(msg.content)
+          };
+        }
+        return msg;
+      });
+      setChatHistory(cleanedMessages);
     } catch (err) {
       setError("Failed to load chat history");
       console.error(err);
@@ -105,8 +115,8 @@ RESPONSE FORMATTING GUIDELINES:
     const userMessage = explicitMessage || message.trim();
     if (!userMessage) return;
 
-    // Replace the existing cleanUserMessage function with the imported utility
-    const displayMessage = cleanMessageForDisplay(userMessage);
+    // Use more aggressive cleaning for display - show only user's actual input
+    const displayMessage = extractUserContent(userMessage);
     
     // Add user message to chat history immediately for UI feedback
     const updatedChatHistory = [...chatHistory, { 
@@ -127,25 +137,33 @@ RESPONSE FORMATTING GUIDELINES:
     
     try {
       const response = await apiClient.sendMessage(
-        userMessage,
+        userMessage, // Send original full message to API
         currentChatId,
         aiProvider,
         model,
         needsSystemContext ? getEnhancedSystemContext() : undefined,
-        feature,      // Pass feature
-        subFeature    // Pass subFeature
+        feature,
+        subFeature
       );
       
       // Update with the server response
       setCurrentChatId(response.data.chat._id);
-      setChatHistory(response.data.chat.messages);
+      setChatHistory(response.data.chat.messages.map(msg => {
+        // Clean user messages for display
+        if (msg.role === 'user') {
+          return {
+            ...msg,
+            content: extractUserContent(msg.content)
+          };
+        }
+        return msg;
+      }));
       
       // Pass the response back to the parent component
       if (response && onAiResponse) {
         onAiResponse(response.data.aiResponse);
       }
     } catch (err) {
-      // If error, keep the user message but show error
       setError("Failed to get AI response. Please try again.");
       console.error(err);
     } finally {

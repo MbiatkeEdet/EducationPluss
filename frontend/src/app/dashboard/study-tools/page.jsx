@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
-import { cleanMessageForDisplay } from '@/lib/messageUtils';
+import { cleanMessageForDisplay, extractUserContent } from '@/lib/messageUtils';
 
 // Dynamic import for jsPDF to avoid SSR issues
 const JsPDF = dynamic(
@@ -127,25 +127,26 @@ function StudyToolsContent() {
     window.history.pushState({}, '', newUrl);
   };
   
-  const handleStudyContentSubmit = (e) => {
+  const handleContentSubmit = (e) => {
     e.preventDefault();
-    if (!studyContent.trim()) return;
-
-    setIsProcessing(true);
-    let message = '';
+    if (!studyContent.trim() || !selectedTool) return;
     
+    setIsProcessing(true);
+    setAiResponse(null);
+    
+    let message;
     switch (selectedTool.id) {
       case 'flashcards':
-        message = `Please create study flashcards from this content. Format them exactly with **Front:** and **Back:** patterns separated by ---\n\n${studyContent}`;
+        message = `Please create flashcards from the following content. Format them exactly as Question: [question] | Answer: [answer], one per line:\n\n${studyContent}`;
         break;
       case 'notes':
-        message = `Please help me organize these notes into a well-structured study guide. Return your response in markdown format:\n\n${studyContent}`;
+        message = `Please organize these notes with clear headings and bullet points. Return your response in markdown format:\n\n${studyContent}`;
         break;
       case 'summarizer':
-        message = `Please summarize this content for study purposes. Return your response in markdown format:\n\n${studyContent}`;
+        message = `Please provide a clear, concise summary of this content. Return your response in markdown format:\n\n${studyContent}`;
         break;
       case 'mindmap':
-        message = `Please create a mind map based on this content. Use emoji icons where appropriate to enhance visualization. Return your response in markdown format:\n\n${studyContent}`;
+        message = `Please create a mind map structure from this content. Use a hierarchical bullet-point format with main topics and subtopics:\n\n${studyContent}`;
         break;
       case 'explain':
         message = `Please explain these concepts in a simple, clear way. Use analogies and examples. Return your response in markdown format:\n\n${studyContent}`;
@@ -158,10 +159,10 @@ function StudyToolsContent() {
       message += `\n\n${selectedTool.outputFormat}`;
     }
     
-    // Use cleanMessageForDisplay for the chat history
+    // Use extractUserContent for the chat history display
     const newMessage = {
       role: 'user',
-      content: cleanMessageForDisplay(studyContent), // Clean the display message
+      content: extractUserContent(studyContent), // Show only user's actual content
       timestamp: new Date().toISOString(),
       originalContent: studyContent // Keep original for reference
     };
@@ -420,7 +421,7 @@ function StudyToolsContent() {
                 <p className="text-gray-600 text-sm md:text-base">{selectedTool.description}</p>
                 
                 {!initialMessage && (
-                  <form onSubmit={handleStudyContentSubmit} className="mt-4">
+                  <form onSubmit={handleContentSubmit} className="mt-4">
                     <div className="mb-2">
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Paste your study content below

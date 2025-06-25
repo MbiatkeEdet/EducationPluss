@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Trash2, MessageSquare, Clock, Filter } from 'lucide-react';
 import apiClient from '@/lib/api';
+import { extractUserContent } from '@/lib/messageUtils';
 
 export default function ChatHistoryManager({ feature, subFeature = null }) {
   const [chats, setChats] = useState([]);
@@ -84,9 +85,10 @@ export default function ChatHistoryManager({ feature, subFeature = null }) {
     if (userMessages.length === 0) return 'No messages';
     
     const lastMessage = userMessages[userMessages.length - 1];
-    return lastMessage.content.length > 50 
-      ? `${lastMessage.content.substring(0, 50)}...`
-      : lastMessage.content;
+    const cleanContent = extractUserContent(lastMessage.content);
+    return cleanContent.length > 50 
+      ? `${cleanContent.substring(0, 50)}...`
+      : cleanContent;
   };
 
   return (

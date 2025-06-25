@@ -74,14 +74,14 @@ export default function Login() {
           className="w-full max-w-md"
         >
           {/* Logo */}
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-center mb-2">
             <Link href="/">
-              <div className="relative h-10 w-36 md:h-12 md:w-40">
+              <div className="relative">
                 <Image
-                  src="/logo12.png"
-                  alt="Education+"
-                  width={120}
-                  height={120}
+                  src="/logo-main.png"
+                  alt="Finear"
+                  width={100}
+                  height={100}
                   className="object-contain"
                   priority
                 />
@@ -90,7 +90,7 @@ export default function Login() {
           </div>
           
           {/* Title */}
-          <div className="text-center mb-8">
+          <div className="text-center mb-4">
             <h1 className="text-3xl font-bold text-white">Welcome Back</h1>
             <p className="text-indigo-300 mt-2">Log in to continue your learning journey</p>
           </div>

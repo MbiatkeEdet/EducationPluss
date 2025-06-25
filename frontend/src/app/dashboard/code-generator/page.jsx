@@ -8,6 +8,7 @@ import dynamic from 'next/dynamic';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { atomDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { extractUserContent } from '@/lib/messageUtils';
 
 const JsPDF = dynamic(
   () => import('jspdf').then(mod => mod.default),
@@ -20,8 +21,10 @@ export default function CodeGeneratorPage() {
   const [initialMessage, setInitialMessage] = useState('');
   const [systemContext, setSystemContext] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
+  const [followUpResponse, setFollowUpResponse] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
+  const [copiedStates, setCopiedStates] = useState({});
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('codeGeneratorHistory');
@@ -40,22 +43,40 @@ export default function CodeGeneratorPage() {
     e.preventDefault();
     if (!codeContent.trim()) return;
 
-    const message = `Please generate ${codeLanguage} code for the following requirement. Include detailed implementation steps, explanations, and best practices. Make sure to use proper markdown code blocks with language identifiers:\n\n${codeContent}`;
+    setIsProcessing(true);
     
+    // Create the full message for the AI (with context and formatting)
+    const fullMessage = `Please generate ${codeLanguage} code for the following requirement. Include detailed implementation steps, explanations, and best practices. Make sure to use proper markdown code blocks with language identifiers:\n\n${codeContent}`;
+    
+    // Store only the user's clean input in chat history
     const newMessage = {
       role: 'user',
-      content: codeContent,
+      content: codeContent, // Only the actual user input
       timestamp: new Date().toISOString()
     };
     
     setChatHistory(prev => [...prev, newMessage]);
-    setInitialMessage(message + `\n\n${getFormatInstructions()}`);
+    
+    // Send the full message with formatting instructions to AI
+    setInitialMessage(fullMessage + `\n\n${getFormatInstructions()}`);
     setCodeContent('');
   };
 
   const handleAiResponse = (response) => {
     setAiResponse(response);
     setIsProcessing(false);
+    
+    const aiMessage = {
+      role: 'assistant',
+      content: response.content,
+      timestamp: new Date().toISOString()
+    };
+    
+    setChatHistory(prev => [...prev, aiMessage]);
+  };
+
+  const handleFollowUpResponse = (response) => {
+    setFollowUpResponse(response);
     
     const aiMessage = {
       role: 'assistant',
@@ -77,6 +98,8 @@ export default function CodeGeneratorPage() {
 ## Complete Solution
 \`\`\`${codeLanguage}
 // Provide the complete, working code solution here
+// Include ALL necessary imports, functions, classes, and logic
+// Make sure the code is production-ready and fully functional
 \`\`\`
 
 ## Explanation
@@ -88,13 +111,46 @@ export default function CodeGeneratorPage() {
 // Provide a practical example of how to use the code
 \`\`\`
 
-3. Ensure the code is properly formatted, commented, and follows best practices
-4. If helpful, include alternative approaches or optimizations`;
+3. Ensure the code is COMPLETE and FUNCTIONAL - include all necessary imports, dependencies, and implementation details
+4. The code should be ready to run without modifications
+5. If helpful, include alternative approaches or optimizations`;
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+  // Enhanced function to extract only code blocks
+  const extractCodeOnly = (content) => {
+    const codeBlockRegex = new RegExp(`\`\`\`(?:${codeLanguage})?([\\s\\S]*?)\`\`\``, 'g');
+    const matches = [...content.matchAll(codeBlockRegex)];
+    
+    if (matches.length === 0) return content;
+    
+    // Find the largest code block (likely the main solution)
+    let largestCode = '';
+    for (const match of matches) {
+      const extractedCode = match[1].trim();
+      if (extractedCode.length > largestCode.length) {
+        largestCode = extractedCode;
+      }
+    }
+    
+    return largestCode || content;
+  };
+
+  const copyCodeOnly = (content = aiResponse?.content) => {
+    if (!content) return;
+    const codeOnly = extractCodeOnly(content);
+    copyToClipboard(codeOnly, 'code');
+  };
+
+  const copyToClipboard = async (text, id = 'main') => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedStates(prev => ({ ...prev, [id]: true }));
+      setTimeout(() => {
+        setCopiedStates(prev => ({ ...prev, [id]: false }));
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
   };
 
   const downloadContent = (content, filename, fileType) => {
@@ -111,21 +167,10 @@ export default function CodeGeneratorPage() {
         };
         const ext = extensionMap[codeLanguage] || 'txt';
         
-        let codeContent = content;
-        const codeBlockRegex = new RegExp(`\`\`\`(?:${codeLanguage})?([\\s\\S]*?)\`\`\``, 'g');
-        const matches = [...content.matchAll(codeBlockRegex)];
+        // Extract only the code blocks
+        const codeOnly = extractCodeOnly(content);
         
-        if (matches.length > 0) {
-          for (const match of matches) {
-            const extractedCode = match[1].trim();
-            if (extractedCode.length > 10) {
-              codeContent = extractedCode;
-              break;
-            }
-          }
-        }
-        
-        file = new Blob([codeContent], {type: 'text/plain'});
+        file = new Blob([codeOnly], {type: 'text/plain'});
         filename = `${filename}.${ext}`;
         break;
       case 'text/plain':
@@ -146,6 +191,9 @@ export default function CodeGeneratorPage() {
 
   const clearHistory = () => {
     setChatHistory([]);
+    setAiResponse(null);
+    setFollowUpResponse(null);
+    setInitialMessage('');
     localStorage.removeItem('codeGeneratorHistory');
   };
 
@@ -207,6 +255,110 @@ export default function CodeGeneratorPage() {
       </div>
     </div>
   );
+
+  const renderFormattedResponse = (response, title = "Generated Code") => {
+    if (!response) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">{title}</h3>
+            <button
+              onClick={() => copyToClipboard(response.content, 'main')}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.main ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy All
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {response.content}
+            </ReactMarkdown>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button onClick={() => copyToClipboard(response.content, 'main')} className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+              <Copy size={16} className="mr-2" /> Copy All
+            </button>
+            <button onClick={() => copyCodeOnly(response.content)} className="flex items-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+              <Code size={16} className="mr-2" /> Copy Code Only
+            </button>
+            <button onClick={() => downloadContent(response.content, 'code-solution', 'code')} className="flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition">
+              <Download size={16} className="mr-2" /> Download Code
+            </button>
+            <button onClick={() => downloadContent(response.content, 'full-solution', 'text/plain')} className="flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+              <FileText size={16} className="mr-2" /> Download Full Solution
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFormattedFollowUpResponse = () => {
+    if (!followUpResponse) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-4">
+        <div className="bg-gradient-to-r from-green-500 to-blue-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">Follow-up Response</h3>
+            <button
+              onClick={() => copyToClipboard(followUpResponse.content, 'followup')}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.followup ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy All
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {followUpResponse.content}
+            </ReactMarkdown>
+          </div>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button onClick={() => copyToClipboard(followUpResponse.content, 'followup')} className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+              <Copy size={16} className="mr-2" /> Copy All
+            </button>
+            <button onClick={() => copyCodeOnly(followUpResponse.content)} className="flex items-center px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition">
+              <Code size={16} className="mr-2" /> Copy Code Only
+            </button>
+            <button onClick={() => downloadContent(followUpResponse.content, 'followup-code', 'code')} className="flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition">
+              <Download size={16} className="mr-2" /> Download Code
+            </button>
+            <button onClick={() => downloadContent(followUpResponse.content, 'followup-solution', 'text/plain')} className="flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+              <FileText size={16} className="mr-2" /> Download Full Solution
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="h-full flex flex-col">
@@ -318,22 +470,27 @@ export default function CodeGeneratorPage() {
           
           <div className="flex-1 overflow-auto">
             {aiResponse ? (
-              <div className="p-6 bg-gradient-to-br from-slate-50 to-gray-50 rounded-lg shadow overflow-auto h-full">
-                <div className="prose prose-slate max-w-none bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                  <ReactMarkdown components={MarkdownComponents}>
-                    {aiResponse.content}
-                  </ReactMarkdown>
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <button onClick={() => copyToClipboard(aiResponse.content)} className="flex items-center px-3 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
-                    <Copy size={16} className="mr-2" /> Copy All
-                  </button>
-                  <button onClick={() => downloadContent(aiResponse.content, 'code-solution', 'code')} className="flex items-center px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-900 transition">
-                    <Code size={16} className="mr-2" /> Download Code
-                  </button>
-                  <button onClick={() => downloadContent(aiResponse.content, 'full-solution', 'text/plain')} className="flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                    <Terminal size={16} className="mr-2" /> Download Full Solution
-                  </button>
+              <div className="h-full overflow-y-auto p-6 bg-gray-50">
+                {renderFormattedResponse(aiResponse)}
+                {renderFormattedFollowUpResponse()}
+                
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Continue the conversation:</h4>
+                  <div className="bg-white rounded-lg border">
+                    <ChatInterface 
+                      initialMessage=""
+                      aiProvider="deepseek"
+                      model="deepseek-chat"
+                      placeholder="Ask follow-up questions about your code..."
+                      systemContext={systemContext}
+                      feature="code-generator"
+                      subFeature={codeLanguage}
+                      showChat={true}
+                      hideAiResponse={true}
+                      hideSystemMessages={true} // Add this prop if supported
+                      onAiResponse={handleFollowUpResponse}
+                    />
+                  </div>
                 </div>
                 
                 {/* Mobile Chat History */}
@@ -348,9 +505,9 @@ export default function CodeGeneratorPage() {
                 model="deepseek-chat"
                 placeholder="Ask follow-up questions about your code..."
                 systemContext={systemContext}
-                formatInstructions={getFormatInstructions()}
                 onAiResponse={handleAiResponse}
                 chatHistory={chatHistory}
+                hideSystemMessages={true} // Add this prop if supported
               />
             )}
           </div>
