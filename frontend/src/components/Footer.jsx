@@ -56,8 +56,8 @@ export default function Footer() {
                 <Image
                   src="/logo12.png"
                   alt="Education+ logo"
-                  width={100}
-                  height={100}
+                  width={120}
+                  height={120}
                 
                 />
               </div>

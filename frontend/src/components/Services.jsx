@@ -64,8 +64,9 @@ export default function Services() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-yellow-500 to-indigo-700">
+      <section className="py-20 px-6 bg-gradient-to-b from-yellow-500 to-indigo-700 overflow-hidden">
         <div className="max-w-7xl mx-auto">
+          
           <motion.div
             className="text-center mb-16"
             initial={{ opacity: 0, y: 20 }}
@@ -73,6 +74,15 @@ export default function Services() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
+            <div className="absolute inset-0 flex justify-center items-center pointer-events-none">
+    <div className="absolute w-[500px] h-[500px] rounded-full bg-center animate-rotate"
+         style={{
+           backgroundImage: 'url(/herogirl.png)', // Replace with your image path
+           backgroundSize: 'contain',
+           opacity: 0.1,
+         }}
+    ></div>
+  </div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               UTILITY
             </h2>

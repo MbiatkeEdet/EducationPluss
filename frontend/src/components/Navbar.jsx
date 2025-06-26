@@ -7,7 +7,7 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const navItems = [
-    { text: "AI Features", href: "/features" },
+    { text: "AI Features", href: "/signup" },
     { text: "Roadmap", href: "/roadmap" },
     { text: "Rewards", href: "/rewards" },
     { text: "Community", href: "/community" }
