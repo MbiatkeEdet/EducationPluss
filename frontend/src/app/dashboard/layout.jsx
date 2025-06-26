@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from "next/image";
 import { 
   Home, 
   PenTool, 
@@ -80,9 +81,16 @@ export default function DashboardLayout({ children }) {
       {/* Header */}
       <div className="p-5 border-b border-indigo-600/30">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
-            Education +
-          </h1>
+          <div className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+            <Image
+                              src="/logo-main.png"
+                              alt="Finear"
+                              width={100}
+                              height={100}
+                              className="object-contain"
+                              priority
+                            />
+          </div>
           {isMobile && (
             <button 
               onClick={() => setIsMobileMenuOpen(false)}
@@ -238,7 +246,14 @@ export default function DashboardLayout({ children }) {
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-indigo-800 text-white p-4 shadow-lg">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
-            Education +
+            <Image
+                              src="/logo-main.png"
+                              alt="Finear"
+                              width={100}
+                              height={100}
+                              className="object-contain"
+                              priority
+                            />
           </h1>
           <button 
             onClick={() => setIsMobileMenuOpen(true)}

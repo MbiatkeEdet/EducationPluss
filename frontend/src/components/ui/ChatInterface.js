@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import apiClient from '@/lib/api'; // Adjust the import based on your project structure
-import { cleanMessageForDisplay } from '@/lib/messageUtils';
+import apiClient from '@/lib/api';
+import { cleanMessageForDisplay, extractUserContent } from '@/lib/messageUtils';
 
 export default function ChatInterface({ 
   initialMessage = '', 
@@ -21,17 +21,17 @@ export default function ChatInterface({
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMessage, setStreamingMessage] = useState('');
   const [error, setError] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(chatId);
   const [messageSent, setMessageSent] = useState(false);
   const messagesEndRef = useRef(null);
-  
-  // Enhance the system context with formatting instructions based on tool type
+
+  // Enhanced system context function
   const getEnhancedSystemContext = () => {
-    // Base context
-    let enhancedContext = systemContext;
+    let enhancedContext = systemContext || '';
     
-    // Add generic formatting instructions if none provided specifically
     if (!formatInstructions) {
       enhancedContext += `
 
@@ -42,7 +42,6 @@ RESPONSE FORMATTING GUIDELINES:
 - For lists, use proper Markdown bullet points or numbered lists
 - For hierarchical content, use proper heading levels (# for main headings, ## for subheadings)`;
     } else {
-      // Add custom format instructions if provided
       enhancedContext += "\n\n" + formatInstructions;
     }
     
@@ -53,7 +52,6 @@ RESPONSE FORMATTING GUIDELINES:
     if (currentChatId) {
       fetchChatHistory();
     } else if (initialMessage && systemContext) {
-      // For new chats with system context, add it silently with enhanced formatting
       setChatHistory([
         { role: 'system', content: getEnhancedSystemContext(), timestamp: Date.now() }
       ]);
@@ -61,21 +59,17 @@ RESPONSE FORMATTING GUIDELINES:
   }, [currentChatId, systemContext]);
   
   useEffect(() => {
-    // Scroll to bottom of chat whenever history changes
     scrollToBottom();
-  }, [chatHistory]);
+  }, [chatHistory, streamingMessage]);
 
   useEffect(() => {
-    // When initialMessage changes and is not empty, automatically send it
     if (initialMessage && !messageSent) {
-      // Send the message to the backend - pass the actual initialMessage directly
       const fakeEvent = { preventDefault: () => {} };
-      handleSendMessage(fakeEvent, initialMessage); // Pass initialMessage explicitly
+      handleSendMessage(fakeEvent, initialMessage);
       setMessageSent(true);
     }
   }, [initialMessage]);
 
-  // Reset messageSent when initialMessage changes to empty
   useEffect(() => {
     if (!initialMessage) {
       setMessageSent(false);
@@ -90,7 +84,16 @@ RESPONSE FORMATTING GUIDELINES:
     try {
       setIsLoading(true);
       const response = await apiClient.getChat(currentChatId);
-      setChatHistory(response.data.messages);
+      const cleanedMessages = response.data.messages.map(msg => {
+        if (msg.role === 'user') {
+          return {
+            ...msg,
+            content: extractUserContent(msg.content)
+          };
+        }
+        return msg;
+      });
+      setChatHistory(cleanedMessages);
     } catch (err) {
       setError("Failed to load chat history");
       console.error(err);
@@ -105,113 +108,183 @@ RESPONSE FORMATTING GUIDELINES:
     const userMessage = explicitMessage || message.trim();
     if (!userMessage) return;
 
-    // Replace the existing cleanUserMessage function with the imported utility
-    const displayMessage = cleanMessageForDisplay(userMessage);
+    const displayMessage = extractUserContent(userMessage);
     
-    // Add user message to chat history immediately for UI feedback
-    const updatedChatHistory = [...chatHistory, { 
-      role: 'user', 
-      content: displayMessage, // Use cleaned display message
-      timestamp: Date.now(),
-      originalContent: userMessage // Store original for API calls
-    }];
+    // Add user message to chat history immediately
+    const newUserMessage = {
+      role: 'user',
+      content: displayMessage,
+      timestamp: Date.now()
+    };
     
-    setChatHistory(updatedChatHistory);
+    setChatHistory(prev => [...prev, newUserMessage]);
     setMessage('');
-    setIsLoading(true);
     setError(null);
+    setIsLoading(true);
+    setIsStreaming(true);
+    setStreamingMessage('');
     
-    // If this is first message and we have system context, ensure it's enhanced
-    const needsSystemContext = !currentChatId && 
-      !chatHistory.some(msg => msg.role === 'system' && msg.content.includes(getEnhancedSystemContext()));
-    
+    // Add empty assistant message for streaming
+    setChatHistory(prev => [...prev, {
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      streaming: true
+    }]);
+
     try {
-      const response = await apiClient.sendMessage(
+      const chatData = await apiClient.sendMessageStream(
         userMessage,
         currentChatId,
-        aiProvider,
-        model,
+        aiProvider || 'deepseek',
+        model || 'deepseek-chat',
         needsSystemContext ? getEnhancedSystemContext() : undefined,
-        feature,      // Pass feature
-        subFeature    // Pass subFeature
+        feature,
+        subFeature,
+        // onChunk callback - IMPROVED VERSION
+        (chunk, fullResponse) => {
+          console.log('Streaming chunk received:', chunk); // Add debugging
+          setStreamingMessage(fullResponse);
+          
+          // Update the streaming message in chat history more efficiently
+          setChatHistory(prev => {
+            const newHistory = [...prev];
+            const lastMessageIndex = newHistory.length - 1;
+            
+            if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
+              newHistory[lastMessageIndex] = {
+                ...newHistory[lastMessageIndex],
+                content: fullResponse,
+                streaming: true
+              };
+            }
+            return newHistory;
+          });
+        },
+        // onComplete callback
+        (completeData, fullResponse) => {
+          console.log('Streaming complete:', fullResponse); // Add debugging
+          setCurrentChatId(completeData.chat._id);
+          
+          // Final update with complete response
+          setChatHistory(prev => {
+            const newHistory = [...prev];
+            const lastMessageIndex = newHistory.length - 1;
+            
+            if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
+              newHistory[lastMessageIndex] = {
+                ...newHistory[lastMessageIndex],
+                content: fullResponse,
+                streaming: false
+              };
+            }
+            return newHistory;
+          });
+          
+          setIsStreaming(false);
+          setStreamingMessage('');
+          
+          if (onAiResponse) {
+            onAiResponse(fullResponse);
+          }
+        },
+        // onError callback
+        (error) => {
+          console.error('Streaming error:', error); // Add debugging
+          setError(error.message);
+          setIsStreaming(false);
+          setStreamingMessage('');
+          
+          // Remove the empty assistant message on error
+          setChatHistory(prev => prev.slice(0, -1));
+        }
       );
       
-      // Update with the server response
-      setCurrentChatId(response.data.chat._id);
-      setChatHistory(response.data.chat.messages);
+    } catch (error) {
+      console.error('Send message error:', error);
+      setError(error.message);
+      setIsStreaming(false);
+      setStreamingMessage('');
       
-      // Pass the response back to the parent component
-      if (response && onAiResponse) {
-        onAiResponse(response.data.aiResponse);
-      }
-    } catch (err) {
-      // If error, keep the user message but show error
-      setError("Failed to get AI response. Please try again.");
-      console.error(err);
+      // Remove the empty assistant message on error
+      setChatHistory(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
   };
-  
-  // Format timestamp to readable time
-  const formatTime = (timestamp) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-  
+
+  if (!showChat) {
+    return null;
+  }
+
   return (
-    <div className="flex flex-col h-full">
-      {showChat && (
-        <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-          <div className="space-y-4">
-            {chatHistory.filter(msg => msg.role !== 'system').map((msg, index) => (
-              <div 
-                key={index} 
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div 
-                  className={`max-w-3/4 p-3 rounded-lg ${
-                    msg.role === 'user' 
-                      ? 'bg-indigo-600 text-white rounded-br-none' 
-                      : 'bg-white border border-gray-200 rounded-bl-none'
-                  }`}
-                >
-                  <div className="whitespace-pre-wrap">{msg.content}</div>
+    <div className="flex flex-col h-full bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {chatHistory
+          .filter(msg => msg.role !== 'system') // Don't display system messages
+          .map((msg, index) => (
+          <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+              msg.role === 'user' 
+                ? 'bg-indigo-600 text-white' 
+                : 'bg-white text-gray-800 shadow-sm border'
+            }`}>
+              <div className="whitespace-pre-wrap break-words">
+                {msg.role === 'assistant' ? (
                   <div 
-                    className={`text-xs mt-1 ${
-                      msg.role === 'user' ? 'text-indigo-200' : 'text-gray-500'
-                    }`}
-                  >
-                    {msg.timestamp && formatTime(msg.timestamp)}
-                  </div>
-                </div>
+                    dangerouslySetInnerHTML={{ 
+                      __html: cleanMessageForDisplay(msg.content) 
+                    }} 
+                  />
+                ) : (
+                  msg.content
+                )}
+                {msg.streaming && (
+                  <span className="inline-block w-2 h-4 bg-gray-400 animate-pulse ml-1"></span>
+                )}
               </div>
-            ))}
-            
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white border border-gray-200 p-3 rounded-lg rounded-bl-none">
-                  <div className="flex space-x-2 items-center">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            {error && (
-              <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 my-4" role="alert">
-                <p>{error}</p>
-              </div>
-            )}
-            
-            <div ref={messagesEndRef} />
+            </div>
           </div>
-        </div>
-      )}
+        ))}
+        
+        {isStreaming && (
+          <div className="flex justify-start">
+            <div className="bg-white text-gray-800 shadow-sm border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <div className="text-sm text-gray-500">AI is responding...</div>
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {isLoading && !isStreaming && (
+          <div className="flex justify-start">
+            <div className="bg-white text-gray-800 shadow-sm border max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
+              <div className="flex items-center space-x-2">
+                <div className="text-sm text-gray-500">Thinking...</div>
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 my-4" role="alert">
+            <p>{error}</p>
+          </div>
+        )}
+        
+        <div ref={messagesEndRef} />
+      </div>
       
       <div className="border-t p-4 bg-white">
         <form onSubmit={handleSendMessage} className="flex space-x-2">
@@ -221,14 +294,14 @@ RESPONSE FORMATTING GUIDELINES:
             onChange={(e) => setMessage(e.target.value)}
             placeholder={placeholder}
             className="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            disabled={isLoading}
+            disabled={isLoading || isStreaming}
           />
           <button
             type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-indigo-400"
-            disabled={isLoading || (!message.trim() && !initialMessage)}
+            disabled={isLoading || isStreaming || !message.trim()}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send
+            {isLoading || isStreaming ? 'Sending...' : 'Send'}
           </button>
         </form>
       </div>

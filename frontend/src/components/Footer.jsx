@@ -54,7 +54,7 @@ export default function Footer() {
             <Link href="/" className="inline-block">
               <div className="relative h-10 w-36">
                 <Image
-                  src="/logo12.png"
+                  src="/logo-main.png"
                   alt="Education+ logo"
                   width={120}
                   height={120}
@@ -62,7 +62,7 @@ export default function Footer() {
                 />
               </div>
             </Link>
-            <p className="text-indigo-200 max-w-md">
+            <p className="text-indigo-200 max-w-md mt-0">
               Revolutionizing education with AI-powered tools and blockchain rewards. Helping students achieve academic excellence while earning cryptocurrency.
             </p>
             <div className="flex gap-4 text-xl text-indigo-200">

@@ -267,6 +267,94 @@ export class ApiClient {
         throw error;
       }
     }
+
+    async streamChatGptResponse(payload, onChunk, onComplete, onError) {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      try {
+        const response = await fetch(`${this.baseUrl}/chatgpt/stream`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to stream response');
+        }
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+        let fullResponse = '';
+        let chatData = null;
+        
+        while (true) {
+          const { done, value } = await reader.read();
+          
+          if (done) break;
+          
+          buffer += decoder.decode(value, { stream: true });
+          
+          // Process buffer line by line to be more robust
+          let eolIndex;
+          while ((eolIndex = buffer.indexOf('\n')) >= 0) {
+            const line = buffer.slice(0, eolIndex).trim();
+            buffer = buffer.slice(eolIndex + 1);
+
+            if (line === '') {
+              // Empty line is an event separator, ignore.
+              continue;
+            }
+
+            if (line.startsWith('data:')) {
+              const jsonStr = line.substring(5).trim();
+              if (jsonStr) {
+                try {
+                  const data = JSON.parse(jsonStr);
+                  
+                  if (data.type === 'chunk' && data.content) {
+                    fullResponse += data.content;
+                    if (onChunk) onChunk(data.content, fullResponse);
+                  } else if (data.type === 'complete' && data.success) {
+                    chatData = data.data;
+                    if (onComplete) onComplete(chatData, fullResponse);
+                  } else if (data.type === 'error') {
+                    if (onError) onError(new Error(data.error));
+                    return; // Stop processing on stream error
+                  } else if (data.streaming && data.success) {
+                    // Initial response with chat info
+                    chatData = { chatId: data.chatId, isNewChat: data.isNewChat };
+                  }
+                } catch (parseError) {
+                  console.error('Failed to parse SSE JSON:', jsonStr, parseError);
+                  if (onError) {
+                    onError(new Error('Failed to parse streaming data.'));
+                  }
+                }
+              }
+            } else {
+              // Log any other lines that are not comments
+              if (!line.startsWith(':')) {
+                console.log('Received non-data SSE line:', line);
+              }
+            }
+          }
+        }
+        
+        return chatData;
+      } catch (error) {
+        console.error('API error:', error);
+        throw error;
+      }
+    }
   }
   
   export default new ApiClient();
