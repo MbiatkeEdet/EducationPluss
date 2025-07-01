@@ -1,10 +1,12 @@
 import React from "react";
+import Navbar from "@/components/Navbar";
 
 export default function PrivacyDisclaimer() {
   return (
+    <>
+    <Navbar />
     <div className="bg-white text-gray-800 px-6 py-10 max-w-4xl mx-auto space-y-6">
       <h1 className="text-3xl font-bold">Privacy</h1>
-      <p className="text-sm text-gray-500">Last updated: March 18, 2025</p>
 
       <h2 className="text-2xl font-semibold mt-4">Privacy Disclaimer for Finear</h2>
       <p>
@@ -35,7 +37,7 @@ export default function PrivacyDisclaimer() {
       <section>
         <h3 className="text-xl font-semibold mt-6">Data Protection</h3>
         <p>
-          Collaterize employs rigorous technical and organizational security measures to protect your personal data from unauthorized access, loss, theft, misuse, or destruction.
+          Finear employs rigorous technical and organizational security measures to protect your personal data from unauthorized access, loss, theft, misuse, or destruction.
         </p>
       </section>
 
@@ -55,14 +57,14 @@ export default function PrivacyDisclaimer() {
           <li>Request data portability</li>
         </ul>
         <p>
-          To exercise any rights, contact us at <a href="mailto:hello@collaterize.com" className="text-blue-600 underline">hello@collaterize.com</a>.
+          To exercise any rights, contact us at <a href="mailto:finear.app@gmail.com" className="text-blue-600 underline">finear.app@gmail.com</a>.
         </p>
       </section>
 
       <section>
         <h3 className="text-xl font-semibold mt-6">Third-Party Links and Content</h3>
         <p>
-          Collaterize is not responsible for the privacy practices or content of third-party websites or platforms linked on our site.
+          Finear is not responsible for the privacy practices or content of third-party websites or platforms linked on our site.
         </p>
       </section>
 
@@ -88,9 +90,10 @@ export default function PrivacyDisclaimer() {
       </section>
 
       <footer className="border-t pt-4 text-sm text-gray-500">
-        <p>© 2025 - Collaterize. Tous droits réservés.</p>
-        <p>© 2025 Collaterize Group SAS, 128 Rue de la Boétie, 75008 Paris, France. All rights reserved.</p>
+        <p>© 2025 - Finear. Tous droits réservés.</p>
+        <p>© 2025 Finear App. All rights reserved.</p>
       </footer>
     </div>
+    </>
   );
 }

@@ -21,6 +21,7 @@ import {
   ArrowRight,
   Wallet
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function RewardsPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -379,9 +380,11 @@ export default function RewardsPage() {
             <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Begin your learning journey and start earning FIN tokens for every milestone you achieve.
             </p>
-            <button className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors">
-              Get Started
-            </button>
+            <Link href="/signup">
+              <button className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+                Get Started
+              </button>
+            </Link>
           </div>
         </div>
       </div>
