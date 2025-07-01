@@ -8,7 +8,7 @@ import Footer from '@/components/Footer'; // Adjust the import based on your pro
 const navItems = [
   { text: "AI Features", href: "/signup" },
   { text: "Roadmap", href: "/roadmap" },
-  { text: "Rewards", href: "/rewards" },
+  { text: "Tokenomics", href: "/tokenomics" },
   { text: "Community", href: "/community" }
 ];
   

@@ -9,7 +9,7 @@ export default function Navbar() {
   const navItems = [
     { text: "AI Features", href: "/signup" },
     { text: "Roadmap", href: "/roadmap" },
-    { text: "Rewards", href: "/rewards" },
+    { text: "Tokenomics", href: "/tokenomics" },
     { text: "Community", href: "/community" }
   ];
 
