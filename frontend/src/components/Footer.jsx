@@ -31,7 +31,7 @@ export default function Footer() {
       title: "Resources",
       links: [
         { text: "Roadmap", href: "/roadmap" },
-        { text: "Privacy Policy", href: "/privacy" },
+        { text: "Privacy", href: "/privacy" },
       ]
     }
   ];
