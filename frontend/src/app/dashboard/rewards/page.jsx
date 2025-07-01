@@ -72,7 +72,7 @@ export default function RewardsPage() {
       setEPlusData(balanceData);
       setRewardStats(statsData);
     } catch (error) {
-      console.error('Failed to load EPlus data:', error);
+      console.error('Failed to load Fin data:', error);
     }
   };
 
@@ -191,9 +191,9 @@ export default function RewardsPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">EPlus Token Rewards</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">FIN Token Rewards</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Earn EPlus tokens for your learning activities and achievements
+          Earn FIN tokens for your learning activities and achievements
         </p>
       </motion.div>
 
@@ -206,10 +206,10 @@ export default function RewardsPage() {
       >
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-2">Your EPlus Balance</h2>
+            <h2 className="text-2xl font-bold mb-2">Your FIN Balance</h2>
             <div className="flex items-baseline gap-2">
               <span className="text-4xl font-bold">{ePlusData.balance?.toFixed(2) || '0.00'}</span>
-              <span className="text-lg opacity-90">EPlus</span>
+              <span className="text-lg opacity-90">FIN</span>
             </div>
           </div>
           <div className="bg-white/20 p-4 rounded-xl backdrop-blur-sm">
@@ -309,7 +309,7 @@ export default function RewardsPage() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Earning Breakdown</h2>
-              <p className="text-gray-600 dark:text-gray-400">See how you've earned your EPlus tokens</p>
+              <p className="text-gray-600 dark:text-gray-400">See how you've earned your $FIN tokens</p>
             </div>
           </div>
 
@@ -392,7 +392,7 @@ export default function RewardsPage() {
                   <div className="font-semibold text-green-600">
                     +{reward.amount?.toFixed(2) || '0.00'}
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">EPlus</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">$FIN</div>
                 </div>
               </motion.div>
             );
@@ -401,7 +401,7 @@ export default function RewardsPage() {
           {(!ePlusData.rewardHistory || ePlusData.rewardHistory.length === 0) && (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <Gift size={32} className="mx-auto mb-2 opacity-50" />
-              <p>No rewards yet. Start learning to earn EPlus tokens!</p>
+              <p>No rewards yet. Start learning to earn $FIN tokens!</p>
             </div>
           )}
         </div>
@@ -470,7 +470,7 @@ export default function RewardsPage() {
         ) : (
           <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
             <AlertCircle className="w-4 h-4" />
-            <span>Connect your Solana wallet to receive EPlus tokens</span>
+            <span>Connect your Solana wallet to receive $FIN tokens</span>
           </div>
         )}
       </motion.div>

@@ -15,7 +15,7 @@ class EPlusService {
       }
       throw new Error('Failed to fetch balance');
     } catch (error) {
-      console.error('EPlus balance error:', error);
+      console.error('FIN balance error:', error);
       return {
         balance: 0,
         rewardHistory: [],
@@ -34,7 +34,7 @@ class EPlusService {
       }
       throw new Error('Failed to fetch stats');
     } catch (error) {
-      console.error('EPlus stats error:', error);
+      console.error('FIN stats error:', error);
       return null;
     }
   }
@@ -131,7 +131,7 @@ class EPlusService {
 
   // Update local balance
   updateLocalBalance(newBalance) {
-    localStorage.setItem('ePlusBalance', newBalance.toString());
+    localStorage.setItem('FINBalance', newBalance.toString());
   }
 }
 

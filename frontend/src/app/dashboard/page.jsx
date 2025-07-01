@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { PlusCircle, Code, Award, BookOpen, ListChecks, Brain, GraduationCap, Wallet } from 'lucide-react';
 import WalletModal from '@/components/ui/WalletModal';
-import LazyEPlusWidget from '@/components/ui/LazyEPlusWidget';
+import LazyWidget from '@/components/ui/LazyEPlusWidget';
 import RewardNotificationContainer from '@/components/ui/RewardNotificationContainer';
 import ePlusService from '@/lib/ePlusService';
 
@@ -55,8 +55,8 @@ export default function DashboardHomePage() {
       }
       
       // Set total rewards from user's EPlus claim or activity metrics
-      if (parsedUser.ePlusClaim && parsedUser.ePlusClaim.claimedAmount) {
-        setTotalRewards(parsedUser.ePlusClaim.claimedAmount);
+      if (parsedUser.finClaim && parsedUser.finClaim.claimedAmount) {
+        setTotalRewards(parsedUser.finClaim.claimedAmount);
       }
     }
     
@@ -91,7 +91,7 @@ export default function DashboardHomePage() {
     });
     
     // Generate total rewards based on activity if not set from user data
-    if (!user?.ePlusClaim?.claimedAmount) {
+    if (!user?.finClaim?.claimedAmount) {
       const calculatedRewards = completedTasks * 5 + examSessions.length * 8;
       setTotalRewards(calculatedRewards);
     }
@@ -137,7 +137,7 @@ export default function DashboardHomePage() {
       setEPlusData(data);
       setTotalRewards(data.balance);
     } catch (error) {
-      console.error('Failed to load EPlus data:', error);
+      console.error('Failed to load Fin data:', error);
     }
   };
 

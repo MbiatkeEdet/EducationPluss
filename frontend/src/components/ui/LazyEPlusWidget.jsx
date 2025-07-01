@@ -101,11 +101,11 @@ const EPlusWidgetSkeleton = () => (
 );
 
 // Error fallback component
-const EPlusWidgetError = ({ onRetry }) => (
+const FINWidgetError = ({ onRetry }) => (
   <div className="bg-gradient-to-br from-gray-400 to-gray-500 p-4 md:p-6 rounded-2xl shadow-lg text-white">
     <div className="text-center">
       <Coins size={32} className="mx-auto mb-2 text-gray-200" />
-      <h3 className="font-semibold mb-2">EPlus Widget</h3>
+      <h3 className="font-semibold mb-2">FIN Widget</h3>
       <p className="text-sm text-gray-200 mb-3">Failed to load rewards data</p>
       <button 
         onClick={onRetry}
@@ -128,7 +128,7 @@ function useErrorBoundary() {
   };
 
   const captureError = (error) => {
-    console.error('EPlusWidget error:', error);
+    console.error('FINWidget error:', error);
     setHasError(true);
     setError(error);
   };

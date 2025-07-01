@@ -55,7 +55,7 @@ export default function Footer() {
               <div className="relative h-10 w-36">
                 <Image
                   src="/logo-main.png"
-                  alt="Education+ logo"
+                  alt="Finear logo"
                   width={120}
                   height={120}
                 
