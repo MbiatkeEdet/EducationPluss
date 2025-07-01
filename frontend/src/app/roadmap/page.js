@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Footer from '@/components/Footer'; // Adjust the import based on your project structure
+import Link from 'next/link';
 
 const navItems = [
   { text: "AI Features", href: "/signup" },
@@ -262,9 +263,11 @@ export default function RoadmapPage() {
             <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Be part of the future of education. Get early access to new features and help shape the platform.
             </p>
-            <button className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors">
-              Get Early Access
-            </button>
+           <Link href="/signup">
+             <button className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors">
+               Get Early Access
+             </button>
+           </Link>
           </div>
         </div>
       </div>
