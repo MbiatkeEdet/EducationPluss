@@ -9,8 +9,8 @@ import { CheckCircle, Users, PenTool, Brain, Calendar, Zap, Settings, FileText, 
 const navItems = [
   { text: "AI Features", href: "/signup" },
   { text: "Roadmap", href: "/roadmap" },
-  { text: "Rewards", href: "/rewards" },
-  { text: "Community", href: "/community" }
+  { text: "Community", href: "/community" },
+  { text: "Rewards", href: "/rewards" }
 ];
   
 export default function RoadmapPage() {

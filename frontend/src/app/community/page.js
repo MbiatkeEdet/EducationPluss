@@ -9,6 +9,7 @@ import {
   Crown,
   Flame
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function CommunityPage() {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -171,12 +172,14 @@ export default function CommunityPage() {
             <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
               Start learning, complete tasks, and climb the leaderboard. Every study session counts!
             </p>
-            <button 
-              onClick={() => window.location.href = '/dashboard'}
-              className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Start Learning
-            </button>
+            <Link href="/signup">
+              <button
+                onClick={() => window.location.href = '/dashboard'}
+                className="bg-white text-indigo-600 font-semibold px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Start Learning
+              </button>
+            </Link>
           </div>
         </div>
       </div>

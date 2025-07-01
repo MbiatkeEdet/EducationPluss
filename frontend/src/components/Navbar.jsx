@@ -17,7 +17,8 @@ export default function Navbar() {
     { text: "AI Features", href: "/signup" },
     { text: "Roadmap", href: "/roadmap" },
     { text: "Tokenomics", href: "/tokenomics" },
-    { text: "Community", href: "/community" }
+    { text: "Community", href: "/community" },
+    { text: "Rewards", href: "/rewards" }
   ];
 
   // Check authentication status

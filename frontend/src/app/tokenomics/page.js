@@ -10,7 +10,8 @@ const navItems = [
   { text: "AI Features", href: "/signup" },
   { text: "Roadmap", href: "/roadmap" },
   { text: "Tokenomics", href: "/tokenomics" },
-  { text: "Community", href: "/community" }
+  { text: "Community", href: "/community" },
+  { text: "Rewards", href: "/rewards" }
 ];
 
 export default function Tokenomics() {
