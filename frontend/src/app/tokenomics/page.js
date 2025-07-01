@@ -106,7 +106,7 @@ export default function Tokenomics() {
           </div>
         )}
       </header>
-      <div className="bg-gray-300 text-white mt-7 mb-6 p-8 md:p-10 max-w-4xl mx-auto rounded-xl shadow-lg space-y-8">
+      <div className="bg-gray-300 text-white mt-7 mb-6 p-9 md:p-10 max-w-4xl mx-auto rounded-xl shadow-lg space-y-8">
         <h2 className="text-3xl flex flex-col items-center font-bold">Tokenomics Chart</h2>
         <p className="text-lg">
           <strong>Total Supply:</strong> <span className="text-green-400">1,000,000,000 tokens</span>
@@ -125,8 +125,8 @@ export default function Tokenomics() {
             <tbody>
               {[
                 { name: "Community", percent: "90.0%", tokens: "900,000,000" },
-                { name: "Reward Pool", percent: "0.5%", tokens: "5,000,000" },
-                { name: "Marketing", percent: "0.2%", tokens: "2,000,000" },
+                { name: "Reward Pool", percent: "0.5%", tokens: "10,000,000" },
+                { name: "Marketing", percent: "0.2%", tokens: "7,000,000" },
                 { name: "Team", percent: "8.3%", tokens: "83,000,000" },
               ].map((row, idx) => (
                 <tr
@@ -145,7 +145,7 @@ export default function Tokenomics() {
         {/* Lockup Details */}
         <div className="space-y-4">
           <h3 className="text-2xl font-semibold">Team Allocation Lockup Details</h3>
-          <ul className="list-disc list-inside space-y-2 text-gray-300">
+          <ul className="list-disc list-inside space-y-2 text-black">
             <li>
               <strong>Team Allocation:</strong> 83,000,000 tokens (8.3% of total supply)
             </li>

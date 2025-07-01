@@ -18,7 +18,8 @@ export default function Navbar() {
     { text: "Roadmap", href: "/roadmap" },
     { text: "Tokenomics", href: "/tokenomics" },
     { text: "Community", href: "/community" },
-    { text: "Rewards", href: "/rewards" }
+    { text: "Rewards", href: "/rewards" },
+    
   ];
 
   // Check authentication status
