@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { PlusCircle, Code, Award, BookOpen, ListChecks, Brain, GraduationCap, Wallet } from 'lucide-react';
 import WalletModal from '@/components/ui/WalletModal';
-import LazyWidget from '@/components/ui/LazyEPlusWidget';
+import LazyEPlusWidget from '@/components/ui/LazyEPlusWidget';
 import RewardNotificationContainer from '@/components/ui/RewardNotificationContainer';
 import ePlusService from '@/lib/ePlusService';
 

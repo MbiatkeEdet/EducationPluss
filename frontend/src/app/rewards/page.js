@@ -283,7 +283,10 @@ export default function RewardsPage() {
 
                     <div className="flex items-center justify-between">
                       <span className="text-lg font-bold text-indigo-600">{reward.reward}</span>
-                      <button className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded hover:bg-indigo-200 transition-colors text-sm">
+                      <button 
+                        onClick={handleConnectWallet}
+                        className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded hover:bg-indigo-200 transition-colors text-sm"
+                      >
                         Claim
                       </button>
                     </div>
