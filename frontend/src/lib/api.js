@@ -1,9 +1,36 @@
+import socketClient from './socketClient';
+
 // lib/api.js
 export class ApiClient {
     constructor() {
-      this.baseUrl = process.env.NEXT_PUBLIC_API_URL;
+      this.baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
     }
     
+    // Initialize socket connection
+    initializeSocket() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        return socketClient.connect(token);
+      }
+      throw new Error('No authentication token found');
+    }
+    
+    // Send message via WebSocket
+    async sendMessageSocket(data, callbacks = {}) {
+      try {
+        // Ensure socket is connected
+        if (!socketClient.isSocketConnected()) {
+          this.initializeSocket();
+        }
+
+        return socketClient.sendMessage(data, callbacks);
+      } catch (error) {
+        console.error('Socket message error:', error);
+        throw error;
+      }
+    }
+    
+    // Fallback HTTP message sending (for backward compatibility)
     async sendMessage(content, chatId = null, aiProvider = null, model = null, systemContext = undefined, feature = null, subFeature = null) {
       const token = localStorage.getItem('token');
       
@@ -24,8 +51,8 @@ export class ApiClient {
             aiProvider,
             model,
             systemContext,
-            feature,        // e.g., 'study-tools', 'writing-help', 'code-generator'
-            subFeature      // e.g., 'flashcards', 'notes', 'summarizer'
+            feature,
+            subFeature
           })
         });
         
@@ -151,7 +178,6 @@ export class ApiClient {
       }
     }
     
-    // Add method to get chat history by feature
     async getChatsByFeature(feature, subFeature = null, page = 1, limit = 10) {
       const token = localStorage.getItem('token');
       
@@ -355,6 +381,12 @@ export class ApiClient {
         throw error;
       }
     }
+
+    // Disconnect socket when logging out
+    disconnect() {
+      socketClient.disconnect();
+    }
   }
   
-  export default new ApiClient();
+  const apiClient = new ApiClient();
+  export default apiClient;

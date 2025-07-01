@@ -26,6 +26,7 @@ export default function ChatInterface({
   const [error, setError] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(chatId);
   const [messageSent, setMessageSent] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Enhanced system context function
@@ -75,7 +76,23 @@ RESPONSE FORMATTING GUIDELINES:
       setMessageSent(false);
     }
   }, [initialMessage]);
-  
+
+  // Initialize socket connection
+  useEffect(() => {
+    try {
+      apiClient.initializeSocket();
+      setSocketConnected(true);
+    } catch (error) {
+      console.error('Socket connection failed:', error);
+      setSocketConnected(false);
+    }
+
+    return () => {
+      // Cleanup on unmount
+      apiClient.disconnect();
+    };
+  }, []);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -101,7 +118,7 @@ RESPONSE FORMATTING GUIDELINES:
       setIsLoading(false);
     }
   };
-  
+
   const handleSendMessage = async (e, explicitMessage = null) => {
     e.preventDefault();
     
@@ -132,73 +149,114 @@ RESPONSE FORMATTING GUIDELINES:
       streaming: true
     }]);
 
+    const needsSystemContext = currentChatId === null || chatHistory.length === 0;
+
     try {
-      const chatData = await apiClient.sendMessageStream(
-        userMessage,
-        currentChatId,
-        aiProvider || 'deepseek',
-        model || 'deepseek-chat',
-        needsSystemContext ? getEnhancedSystemContext() : undefined,
-        feature,
-        subFeature,
-        // onChunk callback - IMPROVED VERSION
-        (chunk, fullResponse) => {
-          console.log('Streaming chunk received:', chunk); // Add debugging
-          setStreamingMessage(fullResponse);
-          
-          // Update the streaming message in chat history more efficiently
-          setChatHistory(prev => {
-            const newHistory = [...prev];
-            const lastMessageIndex = newHistory.length - 1;
+      if (socketConnected) {
+        // Use WebSocket for real-time streaming
+        await apiClient.sendMessageSocket({
+          content: userMessage,
+          chatId: currentChatId,
+          aiProvider: aiProvider || 'deepseek',
+          model: model || 'deepseek-chat',
+          systemContext: needsSystemContext ? getEnhancedSystemContext() : undefined,
+          feature,
+          subFeature
+        }, {
+          onStarted: (data) => {
+            console.log('Chat started:', data);
+          },
+          onInfo: (data) => {
+            console.log('Chat info:', data);
+            setCurrentChatId(data.chatId);
+          },
+          onChunk: (data) => {
+            const content = data.content || data.fullContent || '';
+            setStreamingMessage(content);
             
-            if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
-              newHistory[lastMessageIndex] = {
-                ...newHistory[lastMessageIndex],
-                content: fullResponse,
-                streaming: true
-              };
-            }
-            return newHistory;
-          });
-        },
-        // onComplete callback
-        (completeData, fullResponse) => {
-          console.log('Streaming complete:', fullResponse); // Add debugging
-          setCurrentChatId(completeData.chat._id);
-          
-          // Final update with complete response
-          setChatHistory(prev => {
-            const newHistory = [...prev];
-            const lastMessageIndex = newHistory.length - 1;
+            // Update the streaming message in chat history
+            setChatHistory(prev => {
+              const newHistory = [...prev];
+              const lastMessageIndex = newHistory.length - 1;
+              
+              if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
+                newHistory[lastMessageIndex] = {
+                  ...newHistory[lastMessageIndex],
+                  content: data.fullContent || content,
+                  streaming: true
+                };
+              }
+              return newHistory;
+            });
+          },
+          onComplete: (data) => {
+            console.log('Chat complete:', data);
             
-            if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
-              newHistory[lastMessageIndex] = {
-                ...newHistory[lastMessageIndex],
-                content: fullResponse,
-                streaming: false
-              };
+            // Final update with complete response
+            setChatHistory(prev => {
+              const newHistory = [...prev];
+              const lastMessageIndex = newHistory.length - 1;
+              
+              if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
+                newHistory[lastMessageIndex] = {
+                  ...newHistory[lastMessageIndex],
+                  content: data.aiResponse.content,
+                  streaming: false
+                };
+              }
+              return newHistory;
+            });
+            
+            setIsStreaming(false);
+            setStreamingMessage('');
+            
+            if (onAiResponse) {
+              onAiResponse(data.aiResponse);
             }
-            return newHistory;
-          });
-          
-          setIsStreaming(false);
-          setStreamingMessage('');
-          
-          if (onAiResponse) {
-            onAiResponse(fullResponse);
+          },
+          onError: (error) => {
+            console.error('Socket error:', error);
+            setError(error.error || error.message || 'An error occurred');
+            setIsStreaming(false);
+            setStreamingMessage('');
+            
+            // Remove the empty assistant message on error
+            setChatHistory(prev => prev.slice(0, -1));
           }
-        },
-        // onError callback
-        (error) => {
-          console.error('Streaming error:', error); // Add debugging
-          setError(error.message);
-          setIsStreaming(false);
-          setStreamingMessage('');
+        });
+      } else {
+        // Fallback to HTTP
+        const response = await apiClient.sendMessage(
+          userMessage,
+          currentChatId,
+          aiProvider || 'deepseek',
+          model || 'deepseek-chat',
+          needsSystemContext ? getEnhancedSystemContext() : undefined,
+          feature,
+          subFeature
+        );
+
+        setCurrentChatId(response.data.chat._id);
+        
+        // Update chat history with AI response
+        setChatHistory(prev => {
+          const newHistory = [...prev];
+          const lastMessageIndex = newHistory.length - 1;
           
-          // Remove the empty assistant message on error
-          setChatHistory(prev => prev.slice(0, -1));
+          if (lastMessageIndex >= 0 && newHistory[lastMessageIndex].role === 'assistant') {
+            newHistory[lastMessageIndex] = {
+              ...newHistory[lastMessageIndex],
+              content: response.data.aiResponse.content,
+              streaming: false
+            };
+          }
+          return newHistory;
+        });
+
+        if (onAiResponse) {
+          onAiResponse(response.data.aiResponse);
         }
-      );
+      }
       
     } catch (error) {
       console.error('Send message error:', error);
@@ -220,8 +278,15 @@ RESPONSE FORMATTING GUIDELINES:
   return (
     <div className="flex flex-col h-full bg-gray-50">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Connection status indicator */}
+        {!socketConnected && (
+          <div className="bg-yellow-100 border border-yellow-300 text-yellow-700 px-4 py-2 rounded-lg text-sm">
+            WebSocket disconnected - using HTTP fallback
+          </div>
+        )}
+
         {chatHistory
-          .filter(msg => msg.role !== 'system') // Don't display system messages
+          .filter(msg => msg.role !== 'system')
           .map((msg, index) => (
           <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${

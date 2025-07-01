@@ -103,12 +103,12 @@ export default function RewardNotification({
                 <div className="flex items-center gap-2 mb-1">
                   <Coins size={20} className="text-yellow-300" />
                   <span className="text-2xl font-bold">+{notification.amount || 0.01}</span>
-                  <span className="text-sm font-medium opacity-90">EPlus</span>
+                  <span className="text-sm font-medium opacity-90">FIN</span>
                 </div>
                 
                 {notification.newBalance && (
                   <div className="text-sm opacity-90">
-                    Balance: {notification.newBalance} EPlus
+                    Balance: {notification.newBalance} FIN
                   </div>
                 )}
               </div>

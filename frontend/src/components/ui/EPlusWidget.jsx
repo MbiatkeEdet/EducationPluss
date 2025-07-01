@@ -77,7 +77,7 @@ export default function EPlusWidget({
                 <Coins size={28} className="text-yellow-300" />
               </motion.div>
               <div>
-                <h3 className="font-semibold text-xl mb-1">EPlus Rewards</h3>
+                <h3 className="font-semibold text-xl mb-1">FIN Rewards</h3>
                 <div className="flex items-baseline gap-2">
                   <motion.span 
                     className="text-3xl font-bold"
@@ -88,7 +88,7 @@ export default function EPlusWidget({
                   >
                     {balance.toFixed(2)}
                   </motion.span>
-                  <span className="text-lg font-medium text-white/90">EPlus</span>
+                  <span className="text-lg font-medium text-white/90">FIN</span>
                 </div>
                 {todaysRewards.length > 0 && (
                   <div className="flex items-center gap-1 text-sm text-green-300 mt-1">
@@ -178,7 +178,7 @@ export default function EPlusWidget({
               <Coins size={20} className="text-yellow-300" />
             </motion.div>
             <div>
-              <h3 className="font-semibold text-lg">EPlus</h3>
+              <h3 className="font-semibold text-lg">FIN</h3>
               <p className="text-xs text-white/80">Your rewards</p>
             </div>
           </div>
@@ -197,7 +197,7 @@ export default function EPlusWidget({
             >
               {balance.toFixed(2)}
             </motion.span>
-            <span className="text-sm font-medium text-white/90">EPlus</span>
+            <span className="text-sm font-medium text-white/90">FIN</span>
           </div>
           
           {todaysRewards.length > 0 && (
