@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import Footer from '@/components/Footer'; // Adjust the import based on your project structure
+import Navbar from '@/components/Navbar'; // Add this import for Navbar
 import Link from 'next/link';
+import { CheckCircle, Users, PenTool, Brain, Calendar, Zap, Settings, FileText, BookOpen, Globe, Award, Smartphone, MessageSquare, GraduationCap, ArrowRight, Target, ChevronRight } from 'lucide-react';
 
 const navItems = [
   { text: "AI Features", href: "/signup" },
