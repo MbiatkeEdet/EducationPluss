@@ -6,7 +6,7 @@ import ChatInterface from '@/components/ui/ChatInterface';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { CheckCircle, XCircle, Clock, FileText, Award } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, FileText, Award, Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
 
 const examTypes = [
   {
@@ -47,6 +47,7 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
   const [userAnswers, setUserAnswers] = useState({});
   const [startTime] = useState(Date.now());
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [expandedQuestions, setExpandedQuestions] = useState({});
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -70,6 +71,13 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
 
   const handleSubmit = () => {
     onSubmitAnswers(userAnswers, timeElapsed);
+  };
+
+  const toggleQuestionExpansion = (index) => {
+    setExpandedQuestions(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
   };
 
   const parseExamContent = (content) => {
@@ -201,17 +209,18 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
   const questions = parseExamContent(examData);
 
   const renderMultipleChoice = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-4 sticky top-0 z-10">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-4">
+    <div className="space-y-4 md:space-y-6">
+      {/* Mobile-optimized header */}
+      <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 sticky top-0 z-10 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 md:gap-4 text-sm">
             <div className="flex items-center gap-2">
-              <Clock size={16} className="text-gray-500" />
-              <span className="text-sm text-gray-600">Time: {formatTime(timeElapsed)}</span>
+              <Clock size={14} className="text-gray-500" />
+              <span className="text-gray-600">Time: {formatTime(timeElapsed)}</span>
             </div>
             <div className="flex items-center gap-2">
-              <FileText size={16} className="text-gray-500" />
-              <span className="text-sm text-gray-600">
+              <FileText size={14} className="text-gray-500" />
+              <span className="text-gray-600">
                 Progress: {Object.keys(userAnswers).length}/{questions.length}
               </span>
             </div>
@@ -219,7 +228,7 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
           <button
             onClick={handleSubmit}
             disabled={isSubmitted || Object.keys(userAnswers).length !== questions.length}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 text-sm font-medium self-start sm:self-auto"
           >
             {isSubmitted ? 'Submitted' : 'Submit Exam'}
           </button>
@@ -227,32 +236,32 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
       </div>
 
       {questions.map((q, index) => (
-        <div key={index} className="bg-white rounded-lg border border-gray-200 p-6">
+        <div key={index} className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">
+            <h3 className="text-lg font-semibold text-gray-800 flex-1 pr-2">
               Question {index + 1}
             </h3>
             {isSubmitted && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0">
                 {userAnswers[index] === q.correctAnswer ? (
                   <CheckCircle className="text-green-500" size={20} />
                 ) : (
                   <XCircle className="text-red-500" size={20} />
                 )}
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-gray-600 hidden sm:inline">
                   {userAnswers[index] === q.correctAnswer ? 'Correct' : 'Incorrect'}
                 </span>
               </div>
             )}
           </div>
           
-          <p className="text-gray-700 mb-4">{q.question}</p>
+          <p className="text-gray-700 mb-4 text-sm md:text-base leading-relaxed">{q.question}</p>
           
           <div className="space-y-2">
             {q.options.map((option) => (
               <label
                 key={option.letter}
-                className={`flex items-center p-3 rounded-lg border cursor-pointer transition ${
+                className={`flex items-start p-3 rounded-lg border cursor-pointer transition text-sm md:text-base ${
                   userAnswers[index] === option.letter
                     ? 'bg-indigo-50 border-indigo-300'
                     : 'hover:bg-gray-50'
@@ -273,10 +282,10 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
                   checked={userAnswers[index] === option.letter}
                   onChange={(e) => handleAnswerChange(index, e.target.value)}
                   disabled={isSubmitted}
-                  className="mr-3"
+                  className="mt-0.5 mr-3 flex-shrink-0"
                 />
-                <span className="font-medium mr-2">{option.letter}.</span>
-                <span>{option.text}</span>
+                <span className="font-medium mr-2 flex-shrink-0">{option.letter}.</span>
+                <span className="leading-relaxed">{option.text}</span>
               </label>
             ))}
           </div>
@@ -295,14 +304,14 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
       ))}
 
       {isSubmitted && results && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
           <div className="text-center">
             <Award className="mx-auto text-indigo-600 mb-4" size={48} />
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">Exam Results</h3>
-            <div className="text-4xl font-bold text-indigo-600 mb-2">
+            <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">Exam Results</h3>
+            <div className="text-3xl md:text-4xl font-bold text-indigo-600 mb-2">
               {results.score}%
             </div>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 mb-4 text-sm md:text-base">
               {results.correct} out of {results.total} questions correct
             </p>
             <div className="text-sm text-gray-500">
@@ -315,25 +324,25 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
   );
 
   const renderShortAnswer = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-4 sticky top-0 z-10">
-        <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 sticky top-0 z-10 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <Clock size={16} className="text-gray-500" />
+            <Clock size={14} className="text-gray-500" />
             <span className="text-sm text-gray-600">Time: {formatTime(timeElapsed)}</span>
           </div>
           <button
             onClick={handleSubmit}
             disabled={isSubmitted}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 text-sm font-medium self-start sm:self-auto"
           >
             {isSubmitted ? 'Submitted' : 'Submit Answers'}
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <div className="prose max-w-none">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+        <div className="prose prose-sm md:prose max-w-none">
           <ReactMarkdown>{examData}</ReactMarkdown>
         </div>
         
@@ -344,7 +353,7 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
               value={userAnswers.essay || ''}
               onChange={(e) => handleAnswerChange('essay', e.target.value)}
               placeholder="Type your answers here..."
-              className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-48 md:h-64 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             />
           </div>
         )}
@@ -353,12 +362,12 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
           <div className="mt-6 space-y-4">
             <h3 className="text-lg font-semibold">Your Answers:</h3>
             <div className="p-4 bg-gray-50 rounded-lg">
-              <pre className="whitespace-pre-wrap text-gray-700">{userAnswers.essay}</pre>
+              <pre className="whitespace-pre-wrap text-gray-700 text-sm md:text-base">{userAnswers.essay}</pre>
             </div>
             
             <div className="p-4 bg-blue-50 rounded-lg">
               <h4 className="font-semibold text-blue-800 mb-2">AI Feedback:</h4>
-              <div className="prose prose-blue max-w-none">
+              <div className="prose prose-blue prose-sm md:prose max-w-none">
                 <ReactMarkdown>{results.feedback}</ReactMarkdown>
               </div>
             </div>
@@ -369,26 +378,26 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
   );
 
   const renderEssay = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-lg border border-gray-200 p-4 sticky top-0 z-10">
-        <div className="flex justify-between items-center">
+    <div className="space-y-4 md:space-y-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-3 md:p-4 sticky top-0 z-10 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div className="flex items-center gap-2">
-            <Clock size={16} className="text-gray-500" />
+            <Clock size={14} className="text-gray-500" />
             <span className="text-sm text-gray-600">Time: {formatTime(timeElapsed)}</span>
           </div>
           <button
             onClick={handleSubmit}
             disabled={isSubmitted || !userAnswers.essay?.trim()}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400"
+            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 text-sm font-medium self-start sm:self-auto"
           >
             {isSubmitted ? 'Submitted' : 'Submit Essay'}
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
         <h3 className="text-lg font-semibold mb-4">Essay Prompt:</h3>
-        <div className="prose max-w-none mb-6">
+        <div className="prose prose-sm md:prose max-w-none mb-6">
           <ReactMarkdown>{examData}</ReactMarkdown>
         </div>
         
@@ -399,7 +408,7 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
               value={userAnswers.essay || ''}
               onChange={(e) => handleAnswerChange('essay', e.target.value)}
               placeholder="Write your essay here..."
-              className="w-full h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+              className="w-full h-64 md:h-96 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm md:text-base"
             />
             <div className="text-sm text-gray-500">
               Word count: {(userAnswers.essay || '').split(/\s+/).filter(word => word.length > 0).length}
@@ -412,17 +421,17 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
             <div>
               <h3 className="text-lg font-semibold mb-2">Your Essay:</h3>
               <div className="p-4 bg-gray-50 rounded-lg">
-                <pre className="whitespace-pre-wrap text-gray-700">{userAnswers.essay}</pre>
+                <pre className="whitespace-pre-wrap text-gray-700 text-sm md:text-base">{userAnswers.essay}</pre>
               </div>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="p-4 bg-green-50 rounded-lg">
                 <h4 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
                   <Award size={20} />
                   Grade: {results.grade}
                 </h4>
-                <p className="text-green-700">{results.gradeDescription}</p>
+                <p className="text-green-700 text-sm">{results.gradeDescription}</p>
               </div>
               
               <div className="p-4 bg-blue-50 rounded-lg">
@@ -433,7 +442,7 @@ function ExamDisplay({ examData, examType, onSubmitAnswers, isSubmitted, results
             
             <div className="p-4 bg-yellow-50 rounded-lg">
               <h4 className="font-semibold text-yellow-800 mb-2">Detailed Feedback:</h4>
-              <div className="prose prose-yellow max-w-none">
+              <div className="prose prose-yellow prose-sm md:prose max-w-none">
                 <ReactMarkdown>{results.feedback}</ReactMarkdown>
               </div>
             </div>
@@ -468,6 +477,7 @@ export default function ExamPrepPage() {
   const [examData, setExamData] = useState(null);
   const [examSubmitted, setExamSubmitted] = useState(false);
   const [examResults, setExamResults] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   // Load saved prep sessions
   useEffect(() => {
@@ -535,8 +545,9 @@ export default function ExamPrepPage() {
     setPrepSessions([newSession, ...prepSessions]);
     setActivePrepSession(newSession);
     
-    // Reset form
+    // Reset form and close sidebar on mobile
     setTopicInfo('');
+    setIsSidebarOpen(false);
   };
   
   const handleSessionSelect = (session) => {
@@ -545,6 +556,7 @@ export default function ExamPrepPage() {
     setExamGenerated(false);
     setExamSubmitted(false);
     setExamResults(null);
+    setIsSidebarOpen(false); // Close sidebar on mobile after selection
   };
 
   const handleAiResponse = (response) => {
@@ -718,193 +730,81 @@ Please provide detailed feedback and suggestions for improvement.`;
   
   return (
     <div className="h-full flex flex-col">
+      {/* Header */}
       <div className="bg-white shadow-sm border-b p-4">
-        <h1 className="text-2xl font-bold text-gray-800">Exam Prep</h1>
-        <p className="text-gray-600">Generate practice exams and quizzes to test your knowledge</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Exam Prep</h1>
+            <p className="text-sm md:text-base text-gray-600">Generate practice exams and quizzes to test your knowledge</p>
+          </div>
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="lg:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <Menu size={20} />
+          </button>
+        </div>
       </div>
       
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar with past sessions and form */}
-        <div className="w-80 bg-gray-50 border-r overflow-y-auto flex flex-col">
-          {!activePrepSession ? (
-            <div className="p-4 border-b">
-              <h2 className="font-medium text-gray-700 mb-3">Create Practice Exam</h2>
-              <form onSubmit={handleCreatePractice}>
-                {/* Exam Type Selection */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Exam Type
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {examTypes.map((type) => (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setSelectedExamType(type)}
-                        className={`text-center p-2 border rounded-lg ${
-                          selectedExamType?.id === type.id 
-                            ? 'bg-indigo-100 border-indigo-300' 
-                            : 'hover:bg-gray-100'
-                        }`}
-                      >
-                        <div className="text-xl mb-1">{type.icon}</div>
-                        <div className="text-sm font-medium">{type.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* Subject */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Subject Area
-                  </label>
-                  <select
-                    value={selectedSubject}
-                    onChange={(e) => setSelectedSubject(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    required
-                  >
-                    <option value="">Select a subject</option>
-                    {subjectAreas.map((subject) => (
-                      <option key={subject} value={subject}>
-                        {subject}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                
-                {/* Topic */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Specific Topic
-                  </label>
-                  <input
-                    type="text"
-                    value={topicInfo}
-                    onChange={(e) => setTopicInfo(e.target.value)}
-                    placeholder="E.g., Quadratic equations, World War II..."
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    required
-                  />
-                </div>
-                
-                {/* Difficulty */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Difficulty Level
-                  </label>
-                  <select
-                    value={difficultyLevel}
-                    onChange={(e) => setDifficultyLevel(e.target.value)}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  >
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                    <option value="expert">Expert</option>
-                  </select>
-                </div>
-                
-                {/* Number of questions */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Number of Questions
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="20"
-                    value={numQuestions}
-                    onChange={(e) => setNumQuestions(parseInt(e.target.value, 10))}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                  />
-                </div>
-                
-                <button
-                  type="submit"
-                  className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
-                  disabled={!selectedExamType || !selectedSubject || !topicInfo.trim()}
-                >
-                  Generate Practice Exam
-                </button>
-              </form>
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Sidebar Overlay */}
+        {isSidebarOpen && (
+          <div className="lg:hidden fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsSidebarOpen(false)}></div>
+            <div className="absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-white">
+              <SidebarContent
+                activePrepSession={activePrepSession}
+                setActivePrepSession={setActivePrepSession}
+                selectedExamType={selectedExamType}
+                setSelectedExamType={setSelectedExamType}
+                selectedSubject={selectedSubject}
+                setSelectedSubject={setSelectedSubject}
+                topicInfo={topicInfo}
+                setTopicInfo={setTopicInfo}
+                difficultyLevel={difficultyLevel}
+                setDifficultyLevel={setDifficultyLevel}
+                numQuestions={numQuestions}
+                setNumQuestions={setNumQuestions}
+                handleCreatePractice={handleCreatePractice}
+                prepSessions={prepSessions}
+                handleSessionSelect={handleSessionSelect}
+                formatDate={formatDate}
+                onClose={() => setIsSidebarOpen(false)}
+                isMobile={true}
+              />
             </div>
-          ) : (
-            <div className="p-4 border-b">
-              <div className="flex justify-between items-center mb-3">
-                <h2 className="font-medium text-gray-700">Current Session</h2>
-                <button
-                  onClick={() => setActivePrepSession(null)}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm"
-                >
-                  New Exam
-                </button>
-              </div>
-              <div className="bg-white p-3 rounded-lg border border-gray-200">
-                <div className="flex items-center mb-2">
-                  <span className="text-xl mr-2">
-                    {examTypes.find(t => t.id === activePrepSession.type)?.icon || '📚'}
-                  </span>
-                  <span className="font-medium">{activePrepSession.subject}</span>
-                </div>
-                <div className="text-sm text-gray-600 mb-1">
-                  Topic: {activePrepSession.topic}
-                </div>
-                <div className="text-sm text-gray-600 mb-1">
-                  {activePrepSession.questions} questions • {activePrepSession.difficulty} difficulty
-                </div>
-                <div className="text-xs text-gray-500">
-                  {formatDate(activePrepSession.date)}
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Past Sessions */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <h3 className="font-medium text-gray-700 mb-2">Recent Sessions</h3>
-            
-            {prepSessions.length > 0 ? (
-              <div className="space-y-2">
-                {prepSessions.map(session => (
-                  <button
-                    key={session.id}
-                    onClick={() => handleSessionSelect(session)}
-                    className={`w-full text-left p-3 rounded-lg border transition ${
-                      activePrepSession?.id === session.id
-                        ? 'bg-indigo-50 border-indigo-200'
-                        : 'bg-white border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg mr-2">
-                        {examTypes.find(t => t.id === session.type)?.icon || '📚'}
-                      </span>
-                      <span className="font-medium flex-1">{session.subject}</span>
-                      <span className="text-xs text-gray-500">
-                        {formatDate(session.date).split(',')[0]}
-                      </span>
-                    </div>
-                    <div className="text-sm text-gray-600 truncate mt-1">
-                      {session.topic}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center text-gray-500 py-8">
-                <p>No exam sessions yet</p>
-              </div>
-            )}
           </div>
+        )}
+
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-80 bg-gray-50 border-r overflow-y-auto">
+          <SidebarContent
+            activePrepSession={activePrepSession}
+            setActivePrepSession={setActivePrepSession}
+            selectedExamType={selectedExamType}
+            setSelectedExamType={setSelectedExamType}
+            selectedSubject={selectedSubject}
+            setSelectedSubject={setSelectedSubject}
+            topicInfo={topicInfo}
+            setTopicInfo={setTopicInfo}
+            difficultyLevel={difficultyLevel}
+            setDifficultyLevel={setDifficultyLevel}
+            numQuestions={numQuestions}
+            setNumQuestions={setNumQuestions}
+            handleCreatePractice={handleCreatePractice}
+            prepSessions={prepSessions}
+            handleSessionSelect={handleSessionSelect}
+            formatDate={formatDate}
+            isMobile={false}
+          />
         </div>
         
         {/* Main exam prep area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {activePrepSession ? (
             examGenerated && examData ? (
-              <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+              <div className="flex-1 overflow-y-auto p-3 md:p-6 bg-gray-50">
                 <ExamDisplay
                   examData={examData}
                   examType={activePrepSession.type}
@@ -927,17 +827,232 @@ Please provide detailed feedback and suggestions for improvement.`;
               />
             )
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50">
-              <div className="text-center p-8 max-w-md">
-                <h3 className="text-xl font-medium text-gray-800 mb-2">Create a Practice Exam</h3>
-                <p className="text-gray-600">
-                  Use the form on the left to generate a customized practice exam.
+            <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
+              <div className="text-center max-w-md">
+                <h3 className="text-lg md:text-xl font-medium text-gray-800 mb-2">Create a Practice Exam</h3>
+                <p className="text-sm md:text-base text-gray-600 mb-4">
+                  Use the form to generate a customized practice exam.
                   You can select the exam type, subject, topic, and difficulty level.
                 </p>
+                <button
+                  onClick={() => setIsSidebarOpen(true)}
+                  className="lg:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium"
+                >
+                  Get Started
+                </button>
               </div>
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// Sidebar Content Component
+function SidebarContent({
+  activePrepSession,
+  setActivePrepSession,
+  selectedExamType,
+  setSelectedExamType,
+  selectedSubject,
+  setSelectedSubject,
+  topicInfo,
+  setTopicInfo,
+  difficultyLevel,
+  setDifficultyLevel,
+  numQuestions,
+  setNumQuestions,
+  handleCreatePractice,
+  prepSessions,
+  handleSessionSelect,
+  formatDate,
+  onClose,
+  isMobile
+}) {
+  return (
+    <div className="h-full flex flex-col">
+      {/* Mobile header with close button */}
+      {isMobile && (
+        <div className="p-4 border-b flex items-center justify-between">
+          <h2 className="font-semibold text-gray-800">Exam Prep</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+            <X size={20} />
+          </button>
+        </div>
+      )}
+
+      {!activePrepSession ? (
+        <div className="p-4 border-b flex-shrink-0">
+          <h2 className="font-medium text-gray-700 mb-3 text-sm md:text-base">Create Practice Exam</h2>
+          <form onSubmit={handleCreatePractice} className="space-y-4">
+            {/* Exam Type Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Exam Type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                {examTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => setSelectedExamType(type)}
+                    className={`text-center p-2 border rounded-lg text-xs transition ${
+                      selectedExamType?.id === type.id 
+                        ? 'bg-indigo-100 border-indigo-300' 
+                        : 'hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="text-lg mb-1">{type.icon}</div>
+                    <div className="font-medium">{type.name}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {/* Subject */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Subject Area
+              </label>
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                required
+              >
+                <option value="">Select a subject</option>
+                {subjectAreas.map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Topic */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Specific Topic
+              </label>
+              <input
+                type="text"
+                value={topicInfo}
+                onChange={(e) => setTopicInfo(e.target.value)}
+                placeholder="E.g., Quadratic equations, World War II..."
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                required
+              />
+            </div>
+            
+            {/* Difficulty */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Difficulty Level
+              </label>
+              <select
+                value={difficultyLevel}
+                onChange={(e) => setDifficultyLevel(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+                <option value="expert">Expert</option>
+              </select>
+            </div>
+            
+            {/* Number of questions */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number of Questions
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={numQuestions}
+                onChange={(e) => setNumQuestions(parseInt(e.target.value, 10))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              />
+            </div>
+            
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm font-medium"
+              disabled={!selectedExamType || !selectedSubject || !topicInfo.trim()}
+            >
+              Generate Practice Exam
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="p-4 border-b flex-shrink-0">
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="font-medium text-gray-700 text-sm md:text-base">Current Session</h2>
+            <button
+              onClick={() => setActivePrepSession(null)}
+              className="text-indigo-600 hover:text-indigo-800 text-sm"
+            >
+              New Exam
+            </button>
+          </div>
+          <div className="bg-white p-3 rounded-lg border border-gray-200">
+            <div className="flex items-center mb-2">
+              <span className="text-lg mr-2">
+                {examTypes.find(t => t.id === activePrepSession.type)?.icon || '📚'}
+              </span>
+              <span className="font-medium text-sm">{activePrepSession.subject}</span>
+            </div>
+            <div className="text-xs text-gray-600 mb-1">
+              Topic: {activePrepSession.topic}
+            </div>
+            <div className="text-xs text-gray-600 mb-1">
+              {activePrepSession.questions} questions • {activePrepSession.difficulty} difficulty
+            </div>
+            <div className="text-xs text-gray-500">
+              {formatDate(activePrepSession.date)}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Past Sessions */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <h3 className="font-medium text-gray-700 mb-3 text-sm md:text-base">Recent Sessions</h3>
+        
+        {prepSessions.length > 0 ? (
+          <div className="space-y-2">
+            {prepSessions.map(session => (
+              <button
+                key={session.id}
+                onClick={() => handleSessionSelect(session)}
+                className={`w-full text-left p-3 rounded-lg border transition text-xs md:text-sm ${
+                  activePrepSession?.id === session.id
+                    ? 'bg-indigo-50 border-indigo-200'
+                    : 'bg-white border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-base mr-2">
+                    {examTypes.find(t => t.id === session.type)?.icon || '📚'}
+                  </span>
+                  <span className="font-medium flex-1">{session.subject}</span>
+                  <span className="text-xs text-gray-500">
+                    {formatDate(session.date).split(',')[0]}
+                  </span>
+                </div>
+                <div className="text-gray-600 truncate mt-1">
+                  {session.topic}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500 py-8">
+            <p className="text-sm">No exam sessions yet</p>
+          </div>
+        )}
       </div>
     </div>
   );

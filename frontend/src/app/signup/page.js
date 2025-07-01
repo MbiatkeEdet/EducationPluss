@@ -3,13 +3,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock, FaArrowRight } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaArrowRight, FaAt } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 
 export default function SignUp() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
+    username: "",
     email: "",
     password: "",
     confirmPassword: "",
@@ -38,7 +39,7 @@ export default function SignUp() {
     e.preventDefault();
 
     // Simple validation
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (!formData.name || !formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
       setError("All fields are required.");
       return;
     }
@@ -211,6 +212,24 @@ export default function SignUp() {
                     disabled={loading || success}
                     className="w-full pl-10 pr-4 py-3 bg-white/10 border border-indigo-300/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-indigo-300"
                     placeholder="Enter your full name"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white mb-2 font-medium">Username</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaAt className="text-indigo-300" />
+                  </div>
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    disabled={loading || success}
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-indigo-300/30 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400 text-white placeholder-indigo-300"
+                    placeholder="Choose a unique username"
                   />
                 </div>
               </div>

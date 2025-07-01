@@ -7,26 +7,66 @@ export class ApiClient {
     }
     
     // Initialize socket connection
-    initializeSocket() {
+    async initializeSocket() {
       const token = localStorage.getItem('token');
       if (token) {
-        return socketClient.connect(token);
+        try {
+          return socketClient.connect(token);
+        } catch (error) {
+          console.error('Failed to initialize socket:', error);
+          throw new Error('Failed to connect to real-time service');
+        }
       }
       throw new Error('No authentication token found');
     }
     
-    // Send message via WebSocket
+    // Send message via WebSocket with enhanced error handling
     async sendMessageSocket(data, callbacks = {}) {
       try {
-        // Ensure socket is connected
+        // Ensure socket is connected, with automatic reconnection
         if (!socketClient.isSocketConnected()) {
-          this.initializeSocket();
+          console.log('Socket not connected, initializing...');
+          await this.initializeSocket();
         }
 
-        return socketClient.sendMessage(data, callbacks);
+        return await socketClient.sendMessage(data, {
+          ...callbacks,
+          onError: (error) => {
+            console.error('Socket message error:', error);
+            if (callbacks.onError) {
+              callbacks.onError(error);
+            }
+          }
+        });
       } catch (error) {
         console.error('Socket message error:', error);
-        throw error;
+        
+        // If socket fails, fall back to HTTP
+        console.log('Falling back to HTTP messaging...');
+        try {
+          const response = await this.sendMessage(
+            data.content,
+            data.chatId,
+            data.aiProvider,
+            data.model,
+            data.systemContext,
+            data.feature,
+            data.subFeature
+          );
+          
+          // Simulate the callback format for HTTP fallback
+          if (callbacks.onComplete) {
+            callbacks.onComplete({
+              chatId: response.data.chat._id,
+              aiResponse: response.data.aiResponse
+            });
+          }
+          
+          return response;
+        } catch (httpError) {
+          console.error('HTTP fallback also failed:', httpError);
+          throw new Error('Both WebSocket and HTTP messaging failed. Please check your connection.');
+        }
       }
     }
     
@@ -178,7 +218,7 @@ export class ApiClient {
       }
     }
     
-    async getChatsByFeature(feature, subFeature = null, page = 1, limit = 10) {
+    async getChatsByFeature(feature, subFeature = null, page = 1, limit = 20) {
       const token = localStorage.getItem('token');
       
       if (!token) {
@@ -204,7 +244,19 @@ export class ApiClient {
           throw new Error(errorData.message || 'Failed to fetch chat history');
         }
         
-        return await response.json();
+        const data = await response.json();
+        
+        // Normalize response structure
+        return {
+          success: data.success,
+          data: data.data || data.chats || [],
+          chats: data.data || data.chats || [],
+          total: data.totalCount || data.total || 0,
+          totalCount: data.totalCount || data.total || 0,
+          totalPages: data.totalPages || Math.ceil((data.totalCount || data.total || 0) / limit),
+          currentPage: data.currentPage || page,
+          filters: data.filters || {}
+        };
       } catch (error) {
         console.error('API error:', error);
         throw error;
