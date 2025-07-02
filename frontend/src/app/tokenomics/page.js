@@ -114,7 +114,7 @@ export default function Tokenomics() {
 
         {/* Token Allocation Table */}
         <div className="overflow-x-auto">
-          <table className="w-full border border-gray-700">
+          <table className="w-full border border-gray-600">
             <thead className="bg-gray-800">
               <tr>
                 <th className="text-left px-4 py-2">Allocation</th>
