@@ -29,6 +29,7 @@ export default function CodeGeneratorPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('codeGeneratorHistory');
@@ -37,6 +38,16 @@ export default function CodeGeneratorPage() {
     }
     
     setSystemContext('You are a code generation assistant. Help the user generate high-quality, well-documented code based on their requirements. Provide clear implementation steps, explanations, and best practices.');
+    
+    // Check screen size on client-side
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   useEffect(() => {
@@ -597,7 +608,7 @@ export default function CodeGeneratorPage() {
 
       <div className="flex flex-1 overflow-hidden">
         {/* History Sidebar */}
-        {(showHistory || window.innerWidth >= 768) && (
+        {(showHistory || isDesktop) && (
           <div className={`${showHistory ? 'block' : 'hidden md:block'} w-full md:w-80 bg-white border-r relative`}>
             {/* Mobile close button */}
             <button

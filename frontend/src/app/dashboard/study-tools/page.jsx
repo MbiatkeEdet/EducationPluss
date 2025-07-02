@@ -75,6 +75,19 @@ function StudyToolsContent() {
   const [showHistory, setShowHistory] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    // Check screen size on client-side
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+    
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   // Initialize tool from URL
   useEffect(() => {
@@ -118,7 +131,9 @@ function StudyToolsContent() {
     
     // Update URL without page reload
     const newUrl = `/dashboard/study-tools?tool=${tool.id}`;
-    window.history.pushState({}, '', newUrl);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', newUrl);
+    }
   };
 
   const handleChatSelect = (chat) => {
@@ -561,7 +576,7 @@ function StudyToolsContent() {
         )}
 
         {/* History Sidebar */}
-        {selectedTool && (showHistory || window.innerWidth >= 768) && (
+        {selectedTool && (showHistory || isDesktop) && (
           <div className={`${showHistory ? 'block' : 'hidden md:block'} w-full md:w-80 bg-white border-r relative`}>
             {/* Mobile close button */}
             <button

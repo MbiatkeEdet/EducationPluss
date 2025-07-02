@@ -17,6 +17,12 @@ class SocketClient {
       return this.socket;
     }
 
+    // Check if running in browser environment
+    if (typeof window === 'undefined') {
+      console.warn('Socket client can only run in browser environment');
+      return null;
+    }
+
     const serverUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:3001';
     
     this.socket = io(serverUrl, {
