@@ -23,7 +23,7 @@ export default function PrivacyDisclaimer() {
       <section>
         <h3 className="text-xl font-semibold mt-6">Use of Data</h3>
         <ul className="list-disc list-inside space-y-1">
-          <li>Providing, managing, and continuously improving requested services</li>
+          <li>Providing, managing and continuously improving requested services</li>
           <li>Customizing and enhancing user experience</li>
           <li>Developing and refining our commercial offerings</li>
           <li>Conducting market research and statistical analyses</li>
