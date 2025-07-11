@@ -77,19 +77,19 @@ export default function DashboardLayout({ children }) {
   ];
 
   const Sidebar = ({ isMobile = false }) => (
-    <div className={`${isMobile ? 'w-full' : 'w-64'} bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl h-screen`}>
+    <div className={`${isMobile ? 'w-full max-w-xs' : 'w-64'} bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl h-full min-h-0`} style={isMobile ? {height: '100dvh'} : {}}>
       {/* Header */}
-      <div className="p-5 border-b border-indigo-600/30">
+      <div className="p-5 border-b border-indigo-600/30 shrink-0">
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
             <Image
-                              src="/logo-main.png"
-                              alt="Finear"
-                              width={100}
-                              height={100}
-                              className="object-contain"
-                              priority
-                            />
+              src="/logo-main.png"
+              alt="Finear"
+              width={100}
+              height={100}
+              className="object-contain"
+              priority
+            />
           </div>
           {isMobile && (
             <button 
@@ -101,9 +101,8 @@ export default function DashboardLayout({ children }) {
           )}
         </div>
       </div>
-      
       {/* User info */}
-      <div className="p-5 border-b border-indigo-600/30">
+      <div className="p-5 border-b border-indigo-600/30 shrink-0">
         {user && (
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center shadow-lg">
@@ -118,9 +117,8 @@ export default function DashboardLayout({ children }) {
           </div>
         )}
       </div>
-      
       {/* Navigation */}
-      <nav className="flex-1 p-5 overflow-y-auto">
+      <nav className="flex-1 p-5 overflow-y-auto min-h-0">
         <ul className="space-y-2">
           {navigationItems.map((item, index) => (
             <li key={index}>
@@ -190,9 +188,8 @@ export default function DashboardLayout({ children }) {
           ))}
         </ul>
       </nav>
-      
       {/* Bottom section */}
-      <div className="p-5 border-t border-indigo-600/30 space-y-2">
+      <div className="p-5 border-t border-indigo-600/30 space-y-2 shrink-0">
         <Link 
           href="/dashboard/settings" 
           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group"
@@ -268,7 +265,7 @@ export default function DashboardLayout({ children }) {
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="absolute left-0 top-0 h-full w-80 max-w-[85vw]">
+          <div className="absolute left-0 top-0 h-full w-full max-w-xs">
             <Sidebar isMobile={true} />
           </div>
         </div>

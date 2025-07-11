@@ -293,7 +293,7 @@ export default function DashboardHomePage() {
         {/* Welcome message */}
         <div className="mb-4">
           <motion.h1 
-            className="text-2xl font-bold text-gray-800"
+            className="text-lg font-bold text-gray-800"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
