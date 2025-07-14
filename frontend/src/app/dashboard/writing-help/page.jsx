@@ -6,7 +6,7 @@ import ChatInterface from '@/components/ui/ChatInterface';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { Copy, Check, Menu, X } from 'lucide-react';
+import { Copy, Check } from 'lucide-react';
 
 const writingTools = [
   { 
@@ -44,46 +44,42 @@ export default function WritingHelpPage() {
   const [customInput, setCustomInput] = useState('');
   const [initialMessage, setInitialMessage] = useState('');
   const [systemContext, setSystemContext] = useState('');
-  const [hasInitialResponse, setHasInitialResponse] = useState(false);
+  const [aiResponse, setAiResponse] = useState(null);
+  const [followUpResponse, setFollowUpResponse] = useState(null);
   const [copiedStates, setCopiedStates] = useState({});
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [currentChatId, setCurrentChatId] = useState(null);
-  const [chatKey, setChatKey] = useState(0); // Add this to force re-render
-  
+  const [toolsCollapsed, setToolsCollapsed] = useState(false);
+
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
     setSystemContext(tool.systemContext);
     setInitialMessage('');
-    setHasInitialResponse(false);
-    setCurrentChatId(null);
-    setChatKey(prev => prev + 1); // Force new ChatInterface instance
-    setIsDrawerOpen(false); // Close drawer on mobile after selection
+    setAiResponse(null);
+    setFollowUpResponse(null);
+    setToolsCollapsed(true); // Collapse tools after selection
   };
-  
+
+  const handleExpandTools = () => {
+    setToolsCollapsed(false);
+    setSelectedTool(null);
+    setInitialMessage('');
+    setAiResponse(null);
+    setFollowUpResponse(null);
+  };
+
   const handlePromptSubmit = (e) => {
     e.preventDefault();
     if (!customInput.trim()) return;
     
-    const newMessage = selectedTool.prompt + customInput;
-    console.log('Submitting message:', newMessage);
-    
-    // Clear and set the initial message to trigger ChatInterface processing
-    setInitialMessage('');
-    setTimeout(() => {
-      setInitialMessage(newMessage);
-    }, 50);
-    
+    setInitialMessage(selectedTool.prompt + customInput);
     setCustomInput('');
-    setHasInitialResponse(false);
-    setChatKey(prev => prev + 1); // Force ChatInterface to re-render
   };
 
-  const handleInitialAiResponse = (response) => {
-    console.log('Received AI response:', response);
-    setHasInitialResponse(true);
-    if (response.chatId) {
-      setCurrentChatId(response.chatId);
-    }
+  const handleAiResponse = (response) => {
+    setAiResponse(response);
+  };
+
+  const handleFollowUpResponse = (response) => {
+    setFollowUpResponse(response);
   };
 
   const copyToClipboard = async (text, id = 'main') => {
@@ -130,14 +126,14 @@ export default function WritingHelpPage() {
         </code>
       );
     },
-    h1: ({ children }) => <h1 className="text-2xl md:text-3xl font-bold mb-4 text-gray-800 border-b pb-2">{children}</h1>,
-    h2: ({ children }) => <h2 className="text-xl md:text-2xl font-semibold mb-3 mt-6 text-gray-800">{children}</h2>,
-    h3: ({ children }) => <h3 className="text-lg md:text-xl font-semibold mb-2 mt-4 text-gray-700">{children}</h3>,
-    h4: ({ children }) => <h4 className="text-base md:text-lg font-medium mb-2 mt-3 text-gray-700">{children}</h4>,
-    p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed text-sm md:text-base">{children}</p>,
+    h1: ({ children }) => <h1 className="text-3xl font-bold mb-4 text-gray-800 border-b pb-2">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-2xl font-semibold mb-3 mt-6 text-gray-800">{children}</h2>,
+    h3: ({ children }) => <h3 className="text-xl font-semibold mb-2 mt-4 text-gray-700">{children}</h3>,
+    h4: ({ children }) => <h4 className="text-lg font-medium mb-2 mt-3 text-gray-700">{children}</h4>,
+    p: ({ children }) => <p className="mb-4 text-gray-700 leading-relaxed">{children}</p>,
     ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
     ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
-    li: ({ children }) => <li className="text-gray-700 text-sm md:text-base">{children}</li>,
+    li: ({ children }) => <li className="text-gray-700">{children}</li>,
     blockquote: ({ children }) => (
       <blockquote className="border-l-4 border-indigo-500 pl-4 py-2 mb-4 bg-indigo-50 italic">
         {children}
@@ -158,152 +154,206 @@ export default function WritingHelpPage() {
     td: ({ children }) => <td className="px-4 py-2 text-gray-700">{children}</td>,
   };
 
-  // Writing Tools Drawer Component
-  const WritingToolsDrawer = ({ isOpen, onClose }) => (
-    <>
-      {/* Overlay */}
-      {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-          onClick={onClose}
-        />
-      )}
-      
-      {/* Drawer */}
-      <div className={`
-        fixed top-0 left-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ease-in-out
-        md:relative md:transform-none md:w-64 md:bg-gray-50 md:border-r md:z-auto
-        ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-      `}>
-        <div className="flex items-center justify-between p-4 border-b md:hidden">
-          <h2 className="font-semibold text-gray-800">Writing Tools</h2>
-          <button 
-            onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded"
-          >
-            <X size={20} />
-          </button>
+  const renderFormattedResponse = () => {
+    if (!aiResponse) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">AI Response</h3>
+            <button
+              onClick={() => copyToClipboard(aiResponse.content)}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.main ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
         </div>
-        
-        <div className="p-4 overflow-y-auto h-full">
-          <h2 className="font-medium text-gray-700 mb-3 hidden md:block">Writing Tools</h2>
-          <div className="space-y-2">
-            {writingTools.map((tool) => (
-              <button
-                key={tool.id}
-                onClick={() => handleToolSelect(tool)}
-                className={`w-full text-left p-3 rounded-lg transition ${
-                  selectedTool?.id === tool.id 
-                    ? 'bg-indigo-100 border border-indigo-200' 
-                    : 'hover:bg-gray-100'
-                }`}
-              >
-                <div className="font-medium text-sm md:text-base">{tool.name}</div>
-                <div className="text-xs md:text-sm text-gray-600">{tool.description}</div>
-              </button>
-            ))}
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {aiResponse.content}
+            </ReactMarkdown>
           </div>
         </div>
       </div>
-    </>
-  );
+    );
+  };
+
+  const renderFormattedFollowUpResponse = () => {
+    if (!followUpResponse) return null;
+
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mt-4">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-white font-semibold">Follow-up Response</h3>
+            <button
+              onClick={() => copyToClipboard(followUpResponse.content, 'followup')}
+              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+              title="Copy entire response"
+            >
+              {copiedStates.followup ? (
+                <>
+                  <Check size={16} />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={16} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="prose prose-lg max-w-none">
+            <ReactMarkdown components={MarkdownComponents}>
+              {followUpResponse.content}
+            </ReactMarkdown>
+          </div>
+        </div>
+      </div>
+    );
+  };
   
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
       <div className="bg-white shadow-sm border-b p-4">
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="md:hidden p-2 hover:bg-gray-100 rounded-lg"
-          >
-            <Menu size={20} />
-          </button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Writing Help</h1>
-            <p className="text-sm md:text-base text-gray-600">Select a writing tool or ask any writing-related question</p>
-          </div>
-        </div>
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Writing Help</h1>
+        <p className="text-gray-600 text-sm md:text-base">Select a writing tool or ask any writing-related question</p>
       </div>
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Desktop Sidebar / Mobile Drawer */}
-        <WritingToolsDrawer 
-          isOpen={isDrawerOpen} 
-          onClose={() => setIsDrawerOpen(false)} 
-        />
-        
+      <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
+        {/* Tools sidebar */}
+        <div className={`w-full md:w-64 bg-gray-50 border-r md:border-r overflow-y-auto p-4 md:p-4 flex-shrink-0 transition-all duration-300
+          ${toolsCollapsed && selectedTool ? 'h-16 md:h-auto' : 'h-auto'}`}>
+          <div className="flex items-center justify-between">
+            <h2 className="font-medium text-gray-700 mb-3 text-base md:text-lg">
+              Writing Tools
+            </h2>
+            {toolsCollapsed && selectedTool && (
+              <button
+                onClick={handleExpandTools}
+                className="text-xs px-2 py-1 rounded bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition"
+                aria-label="Show all tools"
+              >
+                Change
+              </button>
+            )}
+          </div>
+          {/* Collapsed: show only selected tool */}
+          {toolsCollapsed && selectedTool ? (
+            <button
+              className="w-full text-left p-3 rounded-lg bg-indigo-100 border border-indigo-200 text-sm md:text-base font-medium"
+              onClick={handleExpandTools}
+              aria-label={`Selected tool: ${selectedTool.name}. Click to change.`}
+            >
+              {selectedTool.name}
+              <span className="ml-2 text-xs text-indigo-600">(Change)</span>
+            </button>
+          ) : (
+            <div className="space-y-2">
+              {writingTools.map((tool) => (
+                <button
+                  key={tool.id}
+                  onClick={() => handleToolSelect(tool)}
+                  className={`w-full text-left p-3 rounded-lg transition text-sm md:text-base ${
+                    selectedTool?.id === tool.id 
+                      ? 'bg-indigo-100 border border-indigo-200' 
+                      : 'hover:bg-gray-100'
+                  }`}
+                >
+                  <div className="font-medium">{tool.name}</div>
+                  <div className="text-xs md:text-sm text-gray-600">{tool.description}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden">
           {selectedTool ? (
             <>
-              {/* Top prompt form - hide after initial message is sent */}
-              {!hasInitialResponse && (
-                <div className="bg-indigo-50 p-3 md:p-4 border-b">
-                  <div className="flex items-center gap-2 mb-2">
-                    <button
-                      onClick={() => setIsDrawerOpen(true)}
-                      className="md:hidden p-1 hover:bg-indigo-100 rounded"
-                    >
-                      <Menu size={16} />
-                    </button>
-                    <h2 className="font-medium text-sm md:text-base">{selectedTool.name}</h2>
+              <div className="bg-indigo-50 p-4 border-b">
+                <h2 className="font-medium text-base md:text-lg">{selectedTool.name}</h2>
+                <form onSubmit={handlePromptSubmit} className="mt-2 flex flex-col md:flex-row gap-2">
+                  <div className="flex-1 flex bg-white rounded-lg border overflow-hidden flex-col md:flex-row">
+                    <span className="bg-gray-50 px-3 py-2 text-gray-600 border-b md:border-b-0 md:border-r text-xs md:text-base">
+                      {selectedTool.prompt}
+                    </span>
+                    <input
+                      type="text"
+                      value={customInput}
+                      onChange={(e) => setCustomInput(e.target.value)}
+                      className="flex-1 px-3 py-2 focus:outline-none text-sm md:text-base"
+                      placeholder="Enter your specific request..."
+                    />
                   </div>
-                  <form onSubmit={handlePromptSubmit} className="flex flex-col sm:flex-row gap-2">
-                    <div className="flex-1 flex bg-white rounded-lg border overflow-hidden text-sm md:text-base">
-                      <span className="bg-gray-50 px-2 md:px-3 py-2 text-gray-600 border-r text-xs md:text-sm whitespace-nowrap">
-                        {selectedTool.prompt}
-                      </span>
-                      <input
-                        type="text"
-                        value={customInput}
-                        onChange={(e) => setCustomInput(e.target.value)}
-                        className="flex-1 px-2 md:px-3 py-2 focus:outline-none min-w-0"
-                        placeholder="Enter your specific request..."
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="bg-indigo-600 text-white px-3 md:px-4 py-2 rounded-lg hover:bg-indigo-700 text-sm md:text-base whitespace-nowrap"
-                    >
-                      Submit
-                    </button>
-                  </form>
-                </div>
-              )}
-              
-              {/* Chat Interface - streaming with full chat history */}
+                  <button
+                    type="submit"
+                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 w-full md:w-auto"
+                  >
+                    Submit
+                  </button>
+                </form>
+              </div>
               <div className="flex-1 overflow-hidden">
-                <ChatInterface 
-                  key={`${selectedTool.id}-${chatKey}-${currentChatId || 'new'}`}
-                  initialMessage={initialMessage}
-                  chatId={currentChatId}
-                  aiProvider="deepseek"
-                  model="deepseek-chat"
-                  placeholder="Ask follow-up questions here..."
-                  systemContext={systemContext}
-                  feature="writing-help"
-                  subFeature={selectedTool?.id}
-                  showChat={true}
-                  showInput={hasInitialResponse}
-                  onAiResponse={handleInitialAiResponse}
-                />
+                {aiResponse ? (
+                  <div className="h-full overflow-y-auto p-2 md:p-6 bg-gray-50">
+                    {renderFormattedResponse()}
+                    {renderFormattedFollowUpResponse()}
+                    <div className="mt-6">
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Continue the conversation:</h4>
+                      <div className="bg-white rounded-lg border">
+                        <ChatInterface 
+                          initialMessage=""
+                          aiProvider="deepseek"
+                          model="deepseek-chat"
+                          placeholder="Ask follow-up questions here..."
+                          systemContext={systemContext}
+                          feature="writing-help"
+                          subFeature={selectedTool?.id}
+                          showChat={true}
+                          hideAiResponse={true}
+                          onAiResponse={handleFollowUpResponse}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <ChatInterface 
+                    initialMessage={initialMessage}
+                    aiProvider="deepseek"
+                    model="deepseek-chat"
+                    placeholder="Ask follow-up questions here..."
+                    systemContext={systemContext}
+                    feature="writing-help"
+                    subFeature={selectedTool?.id}
+                    onAiResponse={handleAiResponse}
+                  />
+                )}
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50 p-4">
-              <div className="text-center max-w-md">
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+              <div className="text-center p-4 md:p-8 max-w-md">
                 <h3 className="text-lg md:text-xl font-medium text-gray-800 mb-2">Select a Writing Tool</h3>
-                <p className="text-sm md:text-base text-gray-600 mb-4">
-                  Choose one of the writing tools to get started with your writing task.
+                <p className="text-gray-600 text-sm md:text-base">
+                  Choose one of the writing tools from the sidebar to get started with your writing task.
                 </p>
-                <button
-                  onClick={() => setIsDrawerOpen(true)}
-                  className="md:hidden bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 inline-flex items-center gap-2"
-                >
-                  <Menu size={16} />
-                  View Writing Tools
-                </button>
               </div>
             </div>
           )}

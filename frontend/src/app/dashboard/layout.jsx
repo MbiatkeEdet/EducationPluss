@@ -77,29 +77,35 @@ export default function DashboardLayout({ children }) {
   ];
 
   const Sidebar = ({ isMobile = false }) => (
-    <div className={`${isMobile ? 'w-full max-w-xs' : 'w-64'} bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl h-full min-h-0`} style={isMobile ? {height: '100dvh'} : {}}>
+    <div
+      className={`
+        ${isMobile ? 'w-full max-w-xs fixed inset-y-0 left-0 z-50' : 'w-64'}
+        bg-gradient-to-b from-indigo-800 to-indigo-900 text-white flex flex-col shadow-xl h-full min-h-0
+        ${isMobile ? 'overflow-y-auto' : ''}
+      `}
+      style={isMobile ? {height: '100dvh'} : {}}
+    >
       {/* Header */}
-      <div className="p-5 border-b border-indigo-600/30 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
-            <Image
-              src="/logo-main.png"
-              alt="Finear"
-              width={100}
-              height={100}
-              className="object-contain"
-              priority
-            />
-          </div>
-          {isMobile && (
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="p-2 hover:bg-indigo-700 rounded-lg transition-colors"
-            >
-              <X size={20} />
-            </button>
-          )}
+      <div className="p-5 border-b border-indigo-600/30 shrink-0 flex items-center justify-between">
+        <div className="text-2xl font-bold bg-gradient-to-r from-white to-indigo-200 bg-clip-text text-transparent">
+          <Image
+            src="/logo-main.png"
+            alt="Finear"
+            width={100}
+            height={100}
+            className="object-contain"
+            priority
+          />
         </div>
+        {isMobile && (
+          <button 
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="p-2 hover:bg-indigo-700 rounded-lg transition-colors"
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
       {/* User info */}
       <div className="p-5 border-b border-indigo-600/30 shrink-0">
@@ -189,7 +195,7 @@ export default function DashboardLayout({ children }) {
         </ul>
       </nav>
       {/* Bottom section */}
-      <div className="p-5 border-t border-indigo-600/30 space-y-2 shrink-0">
+      <div className="p-5 border-t border-indigo-600/30 space-y-2 shrink-0 mt-auto">
         <Link 
           href="/dashboard/settings" 
           className="flex items-center space-x-3 p-3 rounded-lg hover:bg-indigo-700/50 transition-all duration-200 group"
