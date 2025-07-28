@@ -14,10 +14,10 @@ export default function Footer() {
     {
       title: "Product",
       links: [
-        { text: "AI Writing Help", href: "/signup" },
-        { text: "Task Manager", href: "/signup" },
-        { text: "Study Tools", href: "/signup" },
-        { text: "Exam Prep", href: "/signup" },
+        { text: "AI Writing Help", href: "/#" },
+        { text: "Task Manager", href: "/#" },
+        { text: "Study Tools", href: "/#" },
+        { text: "Exam Prep", href: "/#" },
       ]
     },
     {
