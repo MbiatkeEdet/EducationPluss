@@ -34,7 +34,7 @@ export default function Hero() {
             <WaitlistForm />
           </div>
           
-          <div className="pt-6 text-gray-400 text-sm">
+          <div className="pt-6 text-gray-400 text-sm text-center">
             <p>Join over 10,000 students waiting for early access</p>
           </div>
         </motion.div>
