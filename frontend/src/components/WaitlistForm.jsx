@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaEnvelope, FaUser, FaCheck, FaSpinner, FaGift } from 'react-icons/fa';
 import { FaTelegram } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { useSearchParams } from 'next/navigation';
 
-export default function WaitlistForm() {
+function WaitlistFormInner() {
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     email: '',
@@ -73,7 +73,6 @@ export default function WaitlistForm() {
   const copyReferralLink = () => {
     const referralUrl = `${window.location.origin}/?ref=${userReferralCode}`;
     navigator.clipboard.writeText(referralUrl);
-    // You could add a toast notification here
   };
 
   if (isSuccess) {
@@ -300,5 +299,20 @@ export default function WaitlistForm() {
         </p>
       </div>
     </motion.div>
+  );
+}
+
+export default function WaitlistForm() {
+  return (
+    <Suspense fallback={
+      <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-auto">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </div>
+      </div>
+    }>
+      <WaitlistFormInner />
+    </Suspense>
   );
 }
