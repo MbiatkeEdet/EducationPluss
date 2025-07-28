@@ -15,10 +15,10 @@ export default function Navbar() {
 
   const navItems = [
     // { text: "AI Features", href: "/signup" },
-    { text: "Roadmap", href: "/roadmap" },
-    { text: "Tokenomics", href: "/tokenomics" },
-    { text: "Community", href: "/community" },
-    { text: "Rewards", href: "/rewards" },
+    // { text: "Roadmap", href: "/roadmap" },
+    // { text: "Tokenomics", href: "/tokenomics" },
+    // { text: "Community", href: "/community" },
+    // { text: "Rewards", href: "/rewards" },
     
   ];
 
