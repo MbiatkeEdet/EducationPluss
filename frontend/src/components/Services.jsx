@@ -102,9 +102,14 @@ export default function Services() {
             transition={{ delay: 0.6, duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <Link href="/signup">
+            {/* <Link href="/signup">
               <button className="px-8 py-3 bg-yellow-400 text-indigo-900 font-semibold rounded-lg hover:bg-yellow-300 transition">
                 Join Finear Today
+              </button>
+            </Link> */}
+            <Link href="#">
+              <button className="px-8 py-3 bg-yellow-400 text-indigo-900 font-semibold rounded-lg hover:bg-yellow-300 transition">
+                Coming soon
               </button>
             </Link>
           </motion.div>

@@ -14,7 +14,7 @@ export default function Navbar() {
   const isHomePage = pathname === '/';
 
   const navItems = [
-    { text: "AI Features", href: "/signup" },
+    // { text: "AI Features", href: "/signup" },
     { text: "Roadmap", href: "/roadmap" },
     { text: "Tokenomics", href: "/tokenomics" },
     { text: "Community", href: "/community" },
@@ -90,15 +90,13 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Auth Buttons */}
-        <div className="hidden md:flex gap-4 items-center">
+        {/* <div className="hidden md:flex gap-4 items-center">
           {isLoggedIn ? (
             <>
-              {/* User greeting */}
               <span className={`text-sm ${isHomePage ? 'text-gray-200' : 'text-white'}`}>
                 Hi, {user?.name || 'User'}!
               </span>
               
-              {/* Dashboard button */}
               <Link href="/dashboard">
                 <button className={`px-6 py-2 rounded-lg font-medium transition ${
                   isHomePage 
@@ -131,7 +129,7 @@ export default function Navbar() {
               </Link>
             </>
           )}
-        </div>
+        </div> */}
 
         {/* Mobile Menu Button */}
         <button
@@ -162,7 +160,7 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-            <div className={`flex flex-col gap-4 w-full pt-4 border-t ${
+            {/* <div className={`flex flex-col gap-4 w-full pt-4 border-t ${
               isHomePage ? 'border-indigo-700' : 'border-indigo-600'
             }`}>
               {isLoggedIn ? (
@@ -202,7 +200,7 @@ export default function Navbar() {
                   </Link>
                 </>
               )}
-            </div>
+            </div> */}
           </ul>
         </div>
       )}
