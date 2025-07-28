@@ -38,7 +38,7 @@ export default function WaitlistForm() {
     setError('');
 
     try {
-      const response = await fetch('/api/waitlist/join', {
+      const response = await fetch('https://educationpluss-backend.onrender.com/api/waitlist/join', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
