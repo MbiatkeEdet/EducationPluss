@@ -71,8 +71,6 @@ function StudyToolsContent() {
   const [initialMessage, setInitialMessage] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [showFormattedResponse, setShowFormattedResponse] = useState(false);
   const [chatHistory, setChatHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedChat, setSelectedChat] = useState(null);
@@ -130,8 +128,7 @@ function StudyToolsContent() {
     setStudyContent('');
     setSelectedChat(null);
     setCurrentChatId(null);
-    setIsStreaming(false);
-    setShowFormattedResponse(false);
+    setIsProcessing(false);
     
     // Update URL without page reload
     const newUrl = `/dashboard/study-tools?tool=${tool.id}`;
@@ -182,8 +179,6 @@ function StudyToolsContent() {
 
     // Reset states for new streaming session
     setAiResponse(null);
-    setShowFormattedResponse(false);
-    setIsStreaming(true);
     setIsProcessing(true);
     
     // Create message based on tool type
@@ -232,7 +227,6 @@ function StudyToolsContent() {
   const handleAiResponse = (response) => {
     console.log('Study Tools AI Response received:', response);
     setAiResponse(response);
-    setIsStreaming(false);
     setIsProcessing(false);
     
     // Only add to local chat history if not using database chat
@@ -245,11 +239,6 @@ function StudyToolsContent() {
       
       setChatHistory(prev => [...prev, aiMessage]);
     }
-    
-    // Add a small delay to let users see the completed streaming before transition
-    setTimeout(() => {
-      setShowFormattedResponse(true);
-    }, 1000); // 1 second delay to show completed streaming
   };
 
   const clearHistory = () => {
@@ -257,8 +246,7 @@ function StudyToolsContent() {
       setChatHistory([]);
       localStorage.removeItem(`${selectedTool.id}History`);
       setAiResponse(null);
-      setShowFormattedResponse(false);
-      setIsStreaming(false);
+      setIsProcessing(false);
     }
   };
 
@@ -716,83 +704,7 @@ function StudyToolsContent() {
                         onAiResponse={handleAiResponse}
                       />
                     </div>
-                  ) : showFormattedResponse && aiResponse ? (
-                    /* Show formatted response after streaming is complete */
-                    <div className="flex-1 bg-gray-50 overflow-hidden">
-                      <div className="h-full flex flex-col">
-                        {/* AI Response Display */}
-                        <div className="flex-1 overflow-y-auto p-4">
-                          <div className="max-w-4xl mx-auto">
-                            <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-                              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center">
-                                    <span className="text-2xl mr-3">{selectedTool.icon}</span>
-                                    <div>
-                                      <h3 className="text-lg font-semibold text-white">
-                                        {selectedTool.name} Result
-                                      </h3>
-                                      <p className="text-indigo-100 text-sm">
-                                        Generated with AI assistance
-                                      </p>
-                                    </div>
-                                  </div>
-                                  <div className="flex space-x-2">
-                                    <button
-                                      onClick={() => {
-                                        setShowFormattedResponse(false);
-                                        setAiResponse(null);
-                                      }}
-                                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                                      title="Try again with streaming"
-                                    >
-                                      Try Again
-                                    </button>
-                                    <button
-                                      onClick={() => copyToClipboard(aiResponse.content)}
-                                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                                      title="Copy to clipboard"
-                                    >
-                                      <Copy size={14} />
-                                      Copy
-                                    </button>
-                                    <button
-                                      onClick={() => downloadContent(aiResponse.content, selectedTool.name.toLowerCase(), 'text/plain')}
-                                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-                                      title="Download"
-                                    >
-                                      <Download size={14} />
-                                      Download
-                                    </button>
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="p-6">
-                                {/* Use the enhanced formatted response renderer */}
-                                {renderFormattedAiResponse(aiResponse.content, selectedTool.id)}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Continue Chat Interface */}
-                        <div className="border-t bg-white">
-                          <ChatInterface 
-                            initialMessage=""
-                            aiProvider="deepseek"
-                            model="deepseek-chat"
-                            systemContext={systemContext}
-                            feature="study-tools"
-                            subFeature={selectedTool.id}
-                            showChat={false}
-                            hideAiResponse={true}
-                            onAiResponse={handleAiResponse}
-                            placeholder="Ask follow-up questions or request modifications..."
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  ) : (isStreaming || initialMessage) ? (
+                  ) : (initialMessage || isProcessing) ? (
                     /* Show streaming ChatInterface */
                     <div className="flex-1 bg-gray-50 overflow-hidden">
                       <ChatInterface 

@@ -1,4 +1,4 @@
-// components/ui/ChatInterface.jsx
+// components/ui/ChatInterface.jsx - Modern Streaming Implementation
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
@@ -24,27 +24,20 @@ export default function ChatInterface({
   feature = null,
   subFeature = null        
 }) {
+  // Simplified state management - only essential states
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [streamingMessage, setStreamingMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [currentChatId, setCurrentChatId] = useState(chatId);
-  const [messageSent, setMessageSent] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connecting');
-  const [streamingProgress, setStreamingProgress] = useState(0);
   const [processedInitialMessage, setProcessedInitialMessage] = useState('');
-  const [isReconnecting, setIsReconnecting] = useState(false);
-  const [streamingRetryCount, setStreamingRetryCount] = useState(0);
-  const [typingBuffer, setTypingBuffer] = useState('');
-  const [lastChunkTime, setLastChunkTime] = useState(0);
+  
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const typingIntervalRef = useRef(null);
 
-  // Enhanced system context function
+  // Enhanced system context function with clean formatting
   const getEnhancedSystemContext = () => {
     let enhancedContext = systemContext || '';
     
@@ -66,54 +59,7 @@ RESPONSE FORMATTING GUIDELINES:
     
     return enhancedContext;
   };
-
-  // Function to simulate character-by-character typing for smoother streaming
-  const simulateTyping = (targetContent, streamingMessageId) => {
-    // Clear any existing typing interval
-    if (typingIntervalRef.current) {
-      clearInterval(typingIntervalRef.current);
-    }
-
-    let currentLength = 0;
-    const typingSpeed = 20; // Characters per second (adjustable)
-    const intervalTime = 1000 / typingSpeed; // Milliseconds between characters
-
-    typingIntervalRef.current = setInterval(() => {
-      currentLength += Math.min(2, targetContent.length - currentLength); // Add 1-2 chars at a time
-      
-      if (currentLength >= targetContent.length) {
-        clearInterval(typingIntervalRef.current);
-        currentLength = targetContent.length;
-      }
-
-      const displayContent = targetContent.substring(0, currentLength);
-      
-      setChatHistory(prev => {
-        const newHistory = [...prev];
-        const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
-        
-        if (lastMessageIndex >= 0) {
-          newHistory[lastMessageIndex] = {
-            ...newHistory[lastMessageIndex],
-            content: displayContent,
-            streaming: currentLength < targetContent.length,
-            isTyping: currentLength < targetContent.length
-          };
-        }
-        return newHistory;
-      });
-    }, intervalTime);
-  };
-
-  // Cleanup typing interval on unmount
-  useEffect(() => {
-    return () => {
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-      }
-    };
-  }, []);
-  
+  // Initialize chat history and system context
   useEffect(() => {
     if (currentChatId) {
       fetchChatHistory();
@@ -124,18 +70,16 @@ RESPONSE FORMATTING GUIDELINES:
     }
   }, [currentChatId, systemContext]);
   
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     scrollToBottom();
-  }, [chatHistory, streamingMessage]);
+  }, [chatHistory]);
 
   // Handle initial message processing
   useEffect(() => {
     if (initialMessage && initialMessage !== processedInitialMessage) {
       console.log('Processing initial message:', initialMessage);
       setProcessedInitialMessage(initialMessage);
-      
-      // Reset the message sent state to allow processing
-      setMessageSent(false);
       
       // Process the initial message immediately
       const fakeEvent = { preventDefault: () => {} };
@@ -147,18 +91,16 @@ RESPONSE FORMATTING GUIDELINES:
   useEffect(() => {
     if (!initialMessage) {
       setProcessedInitialMessage('');
-      setMessageSent(false);
     }
   }, [initialMessage]);
 
-  // Initialize socket connection with enhanced status tracking
+  // Initialize socket connection with clean status tracking
   useEffect(() => {
     let reconnectTimeout;
     
     const initializeConnection = async () => {
       try {
         setConnectionStatus('connecting');
-        setIsReconnecting(false);
         await apiClient.initializeSocket();
         setSocketConnected(true);
         setConnectionStatus('connected');
@@ -169,7 +111,6 @@ RESPONSE FORMATTING GUIDELINES:
         setConnectionStatus('disconnected');
         
         // Attempt to reconnect after 3 seconds
-        setIsReconnecting(true);
         reconnectTimeout = setTimeout(() => {
           if (!socketConnected) {
             console.log('Attempting to reconnect...');
@@ -185,7 +126,6 @@ RESPONSE FORMATTING GUIDELINES:
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
       }
-      setIsReconnecting(false);
       apiClient.disconnect();
     };
   }, []);
@@ -202,7 +142,7 @@ RESPONSE FORMATTING GUIDELINES:
   
   const fetchChatHistory = async () => {
     try {
-      setIsLoading(true);
+      setIsProcessing(true);
       const response = await apiClient.getChat(currentChatId);
       
       const cleanedMessages = response.data.messages.map(msg => {
@@ -219,7 +159,7 @@ RESPONSE FORMATTING GUIDELINES:
       setError("Failed to load chat history");
       console.error(err);
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -241,27 +181,25 @@ RESPONSE FORMATTING GUIDELINES:
     setChatHistory(prev => [...prev, newUserMessage]);
     setMessage('');
     setError(null);
-    setIsLoading(true);
-    setIsStreaming(true);
-    setStreamingMessage('');
-    setStreamingProgress(0);
+    setIsProcessing(true);
     
-    // Add empty assistant message for streaming
+    // Add empty assistant message that will be populated by streaming chunks
     const streamingMessageId = Date.now();
-    setChatHistory(prev => [...prev, {
+    const streamingMessage = {
       id: streamingMessageId,
       role: 'assistant',
       content: '',
       timestamp: Date.now(),
-      streaming: true,
-      isTyping: false // Start without typing until first chunk arrives
-    }]);
+      isStreaming: true,
+      isThinking: true // Start with "thinking" state
+    };
+    setChatHistory(prev => [...prev, streamingMessage]);
 
     const needsSystemContext = currentChatId === null || chatHistory.length === 0;
 
     try {
       if (socketConnected) {
-        // Use WebSocket for real-time streaming
+        // Use WebSocket for real-time streaming - simplified implementation
         await apiClient.sendMessageSocket({
           content: userMessage,
           chatId: currentChatId,
@@ -273,79 +211,58 @@ RESPONSE FORMATTING GUIDELINES:
         }, {
           onStarted: (data) => {
             console.log('Chat started:', data);
-            setStreamingProgress(5);
-            setError(null); // Clear any previous errors
+            setError(null);
           },
           onInfo: (data) => {
             console.log('Chat info:', data);
             setCurrentChatId(data.chatId);
-            setStreamingProgress(10);
           },
           onChunk: (data) => {
+            // DIRECT CHUNK DISPLAY - no simulation, no delays
             const content = data.content || data.fullContent || '';
             const fullContent = data.fullContent || content;
             
-            // Calculate streaming progress (rough estimate)
-            const estimatedProgress = Math.min(90, 10 + (fullContent.length / 10));
-            setStreamingProgress(estimatedProgress);
+            console.log('Received chunk:', { content, fullContent });
             
-            // Use simulated typing for smoother display
-            const currentTime = Date.now();
-            const timeSinceLastChunk = currentTime - lastChunkTime;
-            setLastChunkTime(currentTime);
-            
-            // If chunks are coming too fast, use simulated typing
-            // Otherwise, update immediately for real-time feel
-            if (timeSinceLastChunk < 100 || fullContent.length > 50) {
-              // Simulate typing for better visual effect
-              simulateTyping(fullContent, streamingMessageId);
-            } else {
-              // Update immediately for smaller, well-timed chunks
-              setChatHistory(prev => {
-                const newHistory = [...prev];
-                const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
-                
-                if (lastMessageIndex >= 0) {
-                  newHistory[lastMessageIndex] = {
-                    ...newHistory[lastMessageIndex],
-                    content: fullContent,
-                    streaming: true,
-                    isTyping: true
-                  };
-                }
-                return newHistory;
-              });
-            }
+            // Update the streaming message immediately with real chunk data
+            setChatHistory(prev => {
+              const newHistory = [...prev];
+              const messageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
+              
+              if (messageIndex >= 0) {
+                newHistory[messageIndex] = {
+                  ...newHistory[messageIndex],
+                  content: fullContent,
+                  isStreaming: true,
+                  isThinking: false, // Switch from thinking to typing when first chunk arrives
+                  isTyping: fullContent.length > 0
+                };
+              }
+              return newHistory;
+            });
           },
           onComplete: (data) => {
             console.log('Chat complete:', data);
-            setStreamingProgress(100);
-            
-            // Clear any ongoing typing simulation
-            if (typingIntervalRef.current) {
-              clearInterval(typingIntervalRef.current);
-            }
             
             // Final update with complete response
             setChatHistory(prev => {
               const newHistory = [...prev];
-              const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
+              const messageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
               
-              if (lastMessageIndex >= 0) {
-                newHistory[lastMessageIndex] = {
-                  ...newHistory[lastMessageIndex],
+              if (messageIndex >= 0) {
+                newHistory[messageIndex] = {
+                  ...newHistory[messageIndex],
                   content: data.aiResponse.content,
-                  streaming: false,
-                  isTyping: false // Remove typing indicator
+                  isStreaming: false,
+                  isThinking: false,
+                  isTyping: false
                 };
-                delete newHistory[lastMessageIndex].id; // Remove temp ID
+                delete newHistory[messageIndex].id; // Remove temp ID
               }
               return newHistory;
             });
             
-            setIsStreaming(false);
-            setStreamingMessage('');
-            setStreamingProgress(0);
+            setIsProcessing(false);
             
             if (onAiResponse) {
               onAiResponse({
@@ -356,16 +273,8 @@ RESPONSE FORMATTING GUIDELINES:
           },
           onError: (error) => {
             console.error('Socket error:', error);
-            
-            // Clear any ongoing typing simulation
-            if (typingIntervalRef.current) {
-              clearInterval(typingIntervalRef.current);
-            }
-            
             setError(error.error || error.message || 'An error occurred');
-            setIsStreaming(false);
-            setStreamingMessage('');
-            setStreamingProgress(0);
+            setIsProcessing(false);
             
             // Remove the empty assistant message on error
             setChatHistory(prev => prev.filter(msg => msg.id !== streamingMessageId));
@@ -388,16 +297,17 @@ RESPONSE FORMATTING GUIDELINES:
         // Update chat history with AI response
         setChatHistory(prev => {
           const newHistory = [...prev];
-          const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
+          const messageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
           
-          if (lastMessageIndex >= 0) {
-            newHistory[lastMessageIndex] = {
-              ...newHistory[lastMessageIndex],
+          if (messageIndex >= 0) {
+            newHistory[messageIndex] = {
+              ...newHistory[messageIndex],
               content: response.data.aiResponse.content,
-              streaming: false,
+              isStreaming: false,
+              isThinking: false,
               isTyping: false
             };
-            delete newHistory[lastMessageIndex].id; // Remove temp ID
+            delete newHistory[messageIndex].id; // Remove temp ID
           }
           return newHistory;
         });
@@ -412,21 +322,11 @@ RESPONSE FORMATTING GUIDELINES:
       
     } catch (error) {
       console.error('Send message error:', error);
-      
-      // Clear any ongoing typing simulation
-      if (typingIntervalRef.current) {
-        clearInterval(typingIntervalRef.current);
-      }
-      
       setError(error.message);
-      setIsStreaming(false);
-      setStreamingMessage('');
-      setStreamingProgress(0);
+      setIsProcessing(false);
       
       // Remove the empty assistant message on error
       setChatHistory(prev => prev.filter(msg => msg.id !== streamingMessageId));
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -538,13 +438,13 @@ RESPONSE FORMATTING GUIDELINES:
     )
   };
 
-  // Connection status indicator
+  // Simplified connection status indicator
   const renderConnectionStatus = () => {
     const statusConfig = {
       connecting: {
         color: 'bg-yellow-100 border-yellow-300 text-yellow-700',
         icon: '⏳',
-        message: isReconnecting ? 'Reconnecting to real-time chat...' : 'Connecting to real-time chat...'
+        message: 'Connecting to real-time chat...'
       },
       connected: {
         color: 'bg-green-100 border-green-300 text-green-700',
@@ -554,7 +454,7 @@ RESPONSE FORMATTING GUIDELINES:
       disconnected: {
         color: 'bg-red-100 border-red-300 text-red-700',
         icon: '⚠️',
-        message: isReconnecting ? 'Reconnecting... Will fallback to standard mode if needed' : 'Connection lost - Using fallback mode'
+        message: 'Connection lost - Using fallback mode'
       }
     };
 
@@ -564,9 +464,6 @@ RESPONSE FORMATTING GUIDELINES:
       <div className={`${config.color} px-3 py-2 rounded-lg text-sm border flex items-center gap-2`}>
         <span>{config.icon}</span>
         <span>{config.message}</span>
-        {isReconnecting && (
-          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin ml-2"></div>
-        )}
       </div>
     );
   };
@@ -588,7 +485,7 @@ RESPONSE FORMATTING GUIDELINES:
         {chatHistory
           .filter(msg => {
             if (msg.role === 'system') return false;
-            if (hideAiResponse && msg.role === 'assistant' && !msg.streaming) return false;
+            if (hideAiResponse && msg.role === 'assistant' && !msg.isStreaming) return false;
             return true;
           })
           .map((msg, index) => (
@@ -604,10 +501,11 @@ RESPONSE FORMATTING GUIDELINES:
                     <ReactMarkdown components={MarkdownComponents}>
                       {msg.content}
                     </ReactMarkdown>
-                    {msg.streaming && msg.isTyping && msg.content && (
+                    {/* Real-time streaming indicators */}
+                    {msg.isStreaming && msg.isTyping && msg.content && (
                       <span className="inline-block w-2 h-5 bg-gray-600 typing-cursor ml-1 align-text-bottom"></span>
                     )}
-                    {msg.streaming && !msg.content && (
+                    {msg.isStreaming && msg.isThinking && !msg.content && (
                       <div className="flex items-center space-x-2 gentle-pulse">
                         <div className="flex space-x-1">
                           <div className="w-2 h-2 bg-indigo-500 rounded-full thinking-dot"></div>
@@ -626,8 +524,8 @@ RESPONSE FORMATTING GUIDELINES:
           </div>
         ))}
 
-        {/* Standard loading indicator for HTTP fallback */}
-        {isLoading && !isStreaming && (
+        {/* Simple loading indicator for HTTP fallback */}
+        {isProcessing && !socketConnected && (
           <div className="flex justify-start">
             <div className="bg-white text-gray-800 shadow-sm border border-gray-200 max-w-xs lg:max-w-md px-4 py-2 rounded-lg">
               <div className="flex items-center space-x-2">
@@ -674,9 +572,9 @@ RESPONSE FORMATTING GUIDELINES:
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={placeholder}
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  disabled={isLoading || isStreaming}
+                  disabled={isProcessing}
                 />
-                {(isLoading || isStreaming) && (
+                {isProcessing && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                     <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
                   </div>
@@ -684,10 +582,10 @@ RESPONSE FORMATTING GUIDELINES:
               </div>
               <button
                 type="submit"
-                disabled={isLoading || isStreaming || !message.trim()}
+                disabled={isProcessing || !message.trim()}
                 className="flex-shrink-0 bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center space-x-2"
               >
-                {isLoading || isStreaming ? (
+                {isProcessing ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                     <span>Sending...</span>
@@ -703,23 +601,12 @@ RESPONSE FORMATTING GUIDELINES:
               </button>
             </div>
             
-            {/* Status indicator with enhanced streaming feedback */}
+            {/* Simplified status indicator */}
             <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
               <span className="flex items-center space-x-1">
                 <span className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                <span>{socketConnected ? 'Real-time' : 'Standard'} mode</span>
+                <span>{socketConnected ? 'Real-time streaming' : 'Standard mode'}</span>
               </span>
-              {isStreaming && streamingProgress > 0 && (
-                <div className="flex items-center space-x-2">
-                  <span>Streaming: {Math.round(streamingProgress)}%</span>
-                  <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-indigo-500 rounded-full streaming-progress"
-                      style={{ width: `${streamingProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
             </div>
           </form>
         </div>

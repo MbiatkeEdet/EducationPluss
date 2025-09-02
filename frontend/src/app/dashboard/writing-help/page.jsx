@@ -48,8 +48,7 @@ export default function WritingHelpPage() {
   const [followUpResponse, setFollowUpResponse] = useState(null);
   const [copiedStates, setCopiedStates] = useState({});
   const [toolsCollapsed, setToolsCollapsed] = useState(false);
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [showFormattedResponse, setShowFormattedResponse] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
@@ -57,8 +56,7 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
-    setIsStreaming(false);
-    setShowFormattedResponse(false);
+    setIsProcessing(false);
     setToolsCollapsed(true); // Collapse tools after selection
   };
 
@@ -68,8 +66,7 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
-    setIsStreaming(false);
-    setShowFormattedResponse(false);
+    setIsProcessing(false);
   };
 
   const handlePromptSubmit = (e) => {
@@ -79,8 +76,7 @@ export default function WritingHelpPage() {
     // Reset states for new streaming session
     setAiResponse(null);
     setFollowUpResponse(null);
-    setShowFormattedResponse(false);
-    setIsStreaming(true);
+    setIsProcessing(true);
     
     // Set the initial message to start streaming
     setInitialMessage(selectedTool.prompt + customInput);
@@ -90,12 +86,7 @@ export default function WritingHelpPage() {
   const handleAiResponse = (response) => {
     console.log('AI Response received:', response);
     setAiResponse(response);
-    setIsStreaming(false);
-    
-    // Add a small delay to let users see the completed streaming before transition
-    setTimeout(() => {
-      setShowFormattedResponse(true);
-    }, 1000); // 1 second delay to show completed streaming
+    setIsProcessing(false);
   };
 
   const handleFollowUpResponse = (response) => {
@@ -344,46 +335,21 @@ export default function WritingHelpPage() {
                 </form>
               </div>
               <div className="flex-1 overflow-hidden">
-                {showFormattedResponse && aiResponse ? (
-                  // Show formatted response after streaming is complete
-                  <div className="h-full overflow-y-auto p-2 md:p-6 bg-gray-50">
-                    {renderFormattedResponse()}
-                    {renderFormattedFollowUpResponse()}
-                    <div className="mt-6">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Continue the conversation:</h4>
-                      <div className="bg-white rounded-lg border">
-                        <ChatInterface 
-                          initialMessage=""
-                          aiProvider="deepseek"
-                          model="deepseek-chat"
-                          placeholder="Ask follow-up questions here..."
-                          systemContext={systemContext}
-                          feature="writing-help"
-                          subFeature={selectedTool?.id}
-                          showChat={true}
-                          hideAiResponse={true}
-                          onAiResponse={handleFollowUpResponse}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  // Show streaming ChatInterface
-                  <div className="h-full">
-                    <ChatInterface 
-                      initialMessage={initialMessage}
-                      aiProvider="deepseek"
-                      model="deepseek-chat"
-                      placeholder="Ask follow-up questions here..."
-                      systemContext={systemContext}
-                      feature="writing-help"
-                      subFeature={selectedTool?.id}
-                      showChat={true}
-                      hideAiResponse={false} // Show AI responses during streaming
-                      onAiResponse={handleAiResponse}
-                    />
-                  </div>
-                )}
+                {/* Simple ChatInterface - no complex conditional rendering */}
+                <div className="h-full">
+                  <ChatInterface 
+                    initialMessage={initialMessage}
+                    aiProvider="deepseek"
+                    model="deepseek-chat"
+                    placeholder="Ask questions or request modifications..."
+                    systemContext={systemContext}
+                    feature="writing-help"
+                    subFeature={selectedTool?.id}
+                    showChat={true}
+                    hideAiResponse={false}
+                    onAiResponse={handleAiResponse}
+                  />
+                </div>
               </div>
             </>
           ) : (
