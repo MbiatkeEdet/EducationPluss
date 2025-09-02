@@ -8,6 +8,8 @@ import { BsTwitterX } from "react-icons/bs";
 import Link from "next/link";
 import Image from "next/image";
 import { FaTelegramPlane } from "react-icons/fa";
+import { MdEmail } from "react-icons/md";
+
 
 export default function Footer() {
   const footerLinks = [
@@ -39,8 +41,7 @@ export default function Footer() {
   const socials = [
     { icon: <BsTwitterX />, href: "https://www.twitter.com/@Finear_app" },
     { icon: <FaTelegramPlane />, href: "https://t.me/Finear_app" },
-
-
+    { icon: <MdEmail />, href: "mailto:finear.app@gmail.com" },
   ];
 
   return (
