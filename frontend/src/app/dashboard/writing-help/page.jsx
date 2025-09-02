@@ -48,7 +48,8 @@ export default function WritingHelpPage() {
   const [followUpResponse, setFollowUpResponse] = useState(null);
   const [copiedStates, setCopiedStates] = useState({});
   const [toolsCollapsed, setToolsCollapsed] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [showFormattedResponse, setShowFormattedResponse] = useState(false);
 
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
@@ -56,7 +57,8 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
-    setIsProcessing(false);
+    setIsStreaming(false);
+    setShowFormattedResponse(false);
     setToolsCollapsed(true); // Collapse tools after selection
   };
 
@@ -66,22 +68,34 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
-    setIsProcessing(false);
+    setIsStreaming(false);
+    setShowFormattedResponse(false);
   };
 
   const handlePromptSubmit = (e) => {
     e.preventDefault();
     if (!customInput.trim()) return;
     
-    setIsProcessing(true);
-    setAiResponse(null); // Clear any previous response
+    // Reset states for new streaming session
+    setAiResponse(null);
+    setFollowUpResponse(null);
+    setShowFormattedResponse(false);
+    setIsStreaming(true);
+    
+    // Set the initial message to start streaming
     setInitialMessage(selectedTool.prompt + customInput);
     setCustomInput('');
   };
 
   const handleAiResponse = (response) => {
-    setIsProcessing(false);
+    console.log('AI Response received:', response);
     setAiResponse(response);
+    setIsStreaming(false);
+    
+    // Add a small delay to let users see the completed streaming before transition
+    setTimeout(() => {
+      setShowFormattedResponse(true);
+    }, 1000); // 1 second delay to show completed streaming
   };
 
   const handleFollowUpResponse = (response) => {
@@ -168,23 +182,36 @@ export default function WritingHelpPage() {
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4">
           <div className="flex items-center justify-between">
             <h3 className="text-white font-semibold">AI Response</h3>
-            <button
-              onClick={() => copyToClipboard(aiResponse.content)}
-              className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
-              title="Copy entire response"
-            >
-              {copiedStates.main ? (
-                <>
-                  <Check size={16} />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy size={16} />
-                  Copy
-                </>
-              )}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setShowFormattedResponse(false);
+                  setAiResponse(null);
+                  setFollowUpResponse(null);
+                }}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                title="Try again with streaming"
+              >
+                Try Again
+              </button>
+              <button
+                onClick={() => copyToClipboard(aiResponse.content)}
+                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg text-sm transition-colors"
+                title="Copy entire response"
+              >
+                {copiedStates.main ? (
+                  <>
+                    <Check size={16} />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy size={16} />
+                    Copy
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
         <div className="p-6">
@@ -317,7 +344,8 @@ export default function WritingHelpPage() {
                 </form>
               </div>
               <div className="flex-1 overflow-hidden">
-                {aiResponse && !isProcessing ? (
+                {showFormattedResponse && aiResponse ? (
+                  // Show formatted response after streaming is complete
                   <div className="h-full overflow-y-auto p-2 md:p-6 bg-gray-50">
                     {renderFormattedResponse()}
                     {renderFormattedFollowUpResponse()}
@@ -340,16 +368,21 @@ export default function WritingHelpPage() {
                     </div>
                   </div>
                 ) : (
-                  <ChatInterface 
-                    initialMessage={initialMessage}
-                    aiProvider="deepseek"
-                    model="deepseek-chat"
-                    placeholder="Ask follow-up questions here..."
-                    systemContext={systemContext}
-                    feature="writing-help"
-                    subFeature={selectedTool?.id}
-                    onAiResponse={handleAiResponse}
-                  />
+                  // Show streaming ChatInterface
+                  <div className="h-full">
+                    <ChatInterface 
+                      initialMessage={initialMessage}
+                      aiProvider="deepseek"
+                      model="deepseek-chat"
+                      placeholder="Ask follow-up questions here..."
+                      systemContext={systemContext}
+                      feature="writing-help"
+                      subFeature={selectedTool?.id}
+                      showChat={true}
+                      hideAiResponse={false} // Show AI responses during streaming
+                      onAiResponse={handleAiResponse}
+                    />
+                  </div>
                 )}
               </div>
             </>
