@@ -1,0 +1,62 @@
+/* Streaming Chat Animations */
+
+/* Typing cursor animation - more natural blinking */
+@keyframes typing-cursor {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typing-cursor {
+  animation: typing-cursor 1s infinite;
+}
+
+/* Smooth slide-in animation for new content */
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.streaming-content {
+  animation: slide-in 0.2s ease-out;
+}
+
+/* Thinking dots animation */
+@keyframes thinking-dots {
+  0%, 20% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.thinking-dot {
+  animation: thinking-dots 1.4s infinite ease-in-out;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: 0s; }
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* Smooth progress bar */
+.streaming-progress {
+  transition: width 0.3s ease-out;
+}
+
+/* Message container animations */
+.message-enter {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Pulse effect for streaming indicator */
+@keyframes gentle-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.gentle-pulse {
+  animation: gentle-pulse 2s infinite;
+}
