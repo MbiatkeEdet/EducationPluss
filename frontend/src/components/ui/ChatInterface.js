@@ -7,6 +7,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import apiClient from '@/lib/api';
 import { cleanMessageForDisplay, extractUserContent } from '@/lib/messageUtils';
+import '@/styles/streaming.css';
 
 export default function ChatInterface({ 
   initialMessage = '', 
@@ -35,8 +36,12 @@ export default function ChatInterface({
   const [streamingProgress, setStreamingProgress] = useState(0);
   const [processedInitialMessage, setProcessedInitialMessage] = useState('');
   const [isReconnecting, setIsReconnecting] = useState(false);
+  const [streamingRetryCount, setStreamingRetryCount] = useState(0);
+  const [typingBuffer, setTypingBuffer] = useState('');
+  const [lastChunkTime, setLastChunkTime] = useState(0);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const typingIntervalRef = useRef(null);
 
   // Enhanced system context function
   const getEnhancedSystemContext = () => {
@@ -60,6 +65,53 @@ RESPONSE FORMATTING GUIDELINES:
     
     return enhancedContext;
   };
+
+  // Function to simulate character-by-character typing for smoother streaming
+  const simulateTyping = (targetContent, streamingMessageId) => {
+    // Clear any existing typing interval
+    if (typingIntervalRef.current) {
+      clearInterval(typingIntervalRef.current);
+    }
+
+    let currentLength = 0;
+    const typingSpeed = 20; // Characters per second (adjustable)
+    const intervalTime = 1000 / typingSpeed; // Milliseconds between characters
+
+    typingIntervalRef.current = setInterval(() => {
+      currentLength += Math.min(2, targetContent.length - currentLength); // Add 1-2 chars at a time
+      
+      if (currentLength >= targetContent.length) {
+        clearInterval(typingIntervalRef.current);
+        currentLength = targetContent.length;
+      }
+
+      const displayContent = targetContent.substring(0, currentLength);
+      
+      setChatHistory(prev => {
+        const newHistory = [...prev];
+        const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
+        
+        if (lastMessageIndex >= 0) {
+          newHistory[lastMessageIndex] = {
+            ...newHistory[lastMessageIndex],
+            content: displayContent,
+            streaming: currentLength < targetContent.length,
+            isTyping: currentLength < targetContent.length
+          };
+        }
+        return newHistory;
+      });
+    }, intervalTime);
+  };
+
+  // Cleanup typing interval on unmount
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, []);
   
   useEffect(() => {
     if (currentChatId) {
@@ -200,7 +252,8 @@ RESPONSE FORMATTING GUIDELINES:
       role: 'assistant',
       content: '',
       timestamp: Date.now(),
-      streaming: true
+      streaming: true,
+      isTyping: false // Start without typing until first chunk arrives
     }]);
 
     const needsSystemContext = currentChatId === null || chatHistory.length === 0;
@@ -220,6 +273,7 @@ RESPONSE FORMATTING GUIDELINES:
           onStarted: (data) => {
             console.log('Chat started:', data);
             setStreamingProgress(5);
+            setError(null); // Clear any previous errors
           },
           onInfo: (data) => {
             console.log('Chat info:', data);
@@ -234,24 +288,42 @@ RESPONSE FORMATTING GUIDELINES:
             const estimatedProgress = Math.min(90, 10 + (fullContent.length / 10));
             setStreamingProgress(estimatedProgress);
             
-            // Update the streaming message in chat history in real-time
-            setChatHistory(prev => {
-              const newHistory = [...prev];
-              const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
-              
-              if (lastMessageIndex >= 0) {
-                newHistory[lastMessageIndex] = {
-                  ...newHistory[lastMessageIndex],
-                  content: fullContent, // Show the actual content, not empty
-                  streaming: true
-                };
-              }
-              return newHistory;
-            });
+            // Use simulated typing for smoother display
+            const currentTime = Date.now();
+            const timeSinceLastChunk = currentTime - lastChunkTime;
+            setLastChunkTime(currentTime);
+            
+            // If chunks are coming too fast, use simulated typing
+            // Otherwise, update immediately for real-time feel
+            if (timeSinceLastChunk < 100 || fullContent.length > 50) {
+              // Simulate typing for better visual effect
+              simulateTyping(fullContent, streamingMessageId);
+            } else {
+              // Update immediately for smaller, well-timed chunks
+              setChatHistory(prev => {
+                const newHistory = [...prev];
+                const lastMessageIndex = newHistory.findIndex(msg => msg.id === streamingMessageId);
+                
+                if (lastMessageIndex >= 0) {
+                  newHistory[lastMessageIndex] = {
+                    ...newHistory[lastMessageIndex],
+                    content: fullContent,
+                    streaming: true,
+                    isTyping: true
+                  };
+                }
+                return newHistory;
+              });
+            }
           },
           onComplete: (data) => {
             console.log('Chat complete:', data);
             setStreamingProgress(100);
+            
+            // Clear any ongoing typing simulation
+            if (typingIntervalRef.current) {
+              clearInterval(typingIntervalRef.current);
+            }
             
             // Final update with complete response
             setChatHistory(prev => {
@@ -262,7 +334,8 @@ RESPONSE FORMATTING GUIDELINES:
                 newHistory[lastMessageIndex] = {
                   ...newHistory[lastMessageIndex],
                   content: data.aiResponse.content,
-                  streaming: false
+                  streaming: false,
+                  isTyping: false // Remove typing indicator
                 };
                 delete newHistory[lastMessageIndex].id; // Remove temp ID
               }
@@ -282,6 +355,12 @@ RESPONSE FORMATTING GUIDELINES:
           },
           onError: (error) => {
             console.error('Socket error:', error);
+            
+            // Clear any ongoing typing simulation
+            if (typingIntervalRef.current) {
+              clearInterval(typingIntervalRef.current);
+            }
+            
             setError(error.error || error.message || 'An error occurred');
             setIsStreaming(false);
             setStreamingMessage('');
@@ -314,7 +393,8 @@ RESPONSE FORMATTING GUIDELINES:
             newHistory[lastMessageIndex] = {
               ...newHistory[lastMessageIndex],
               content: response.data.aiResponse.content,
-              streaming: false
+              streaming: false,
+              isTyping: false
             };
             delete newHistory[lastMessageIndex].id; // Remove temp ID
           }
@@ -331,6 +411,12 @@ RESPONSE FORMATTING GUIDELINES:
       
     } catch (error) {
       console.error('Send message error:', error);
+      
+      // Clear any ongoing typing simulation
+      if (typingIntervalRef.current) {
+        clearInterval(typingIntervalRef.current);
+      }
+      
       setError(error.message);
       setIsStreaming(false);
       setStreamingMessage('');
@@ -501,7 +587,7 @@ RESPONSE FORMATTING GUIDELINES:
         {chatHistory
           .filter(msg => msg.role !== 'system')
           .map((msg, index) => (
-          <div key={msg.id || index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div key={msg.id || index} className={`flex message-enter ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-4xl px-4 py-3 rounded-lg shadow-sm ${
               msg.role === 'user' 
                 ? 'bg-indigo-600 text-white' 
@@ -509,19 +595,21 @@ RESPONSE FORMATTING GUIDELINES:
             }`}>
               <div className="whitespace-pre-wrap break-words">
                 {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none streaming-content">
                     <ReactMarkdown components={MarkdownComponents}>
                       {msg.content}
                     </ReactMarkdown>
-                    {msg.streaming && (
-                      <div className="flex items-center mt-2 space-x-2">
+                    {msg.streaming && msg.isTyping && msg.content && (
+                      <span className="inline-block w-2 h-5 bg-gray-600 typing-cursor ml-1 align-text-bottom"></span>
+                    )}
+                    {msg.streaming && !msg.content && (
+                      <div className="flex items-center space-x-2 gentle-pulse">
                         <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                          <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full thinking-dot"></div>
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full thinking-dot"></div>
+                          <div className="w-2 h-2 bg-indigo-500 rounded-full thinking-dot"></div>
                         </div>
-                        <span className="text-xs text-gray-500">Typing...</span>
-                        <div className="w-1 h-4 bg-indigo-500 animate-pulse"></div>
+                        <span className="text-xs text-gray-500">AI is thinking...</span>
                       </div>
                     )}
                   </div>
@@ -610,13 +698,22 @@ RESPONSE FORMATTING GUIDELINES:
               </button>
             </div>
             
-            {/* Status indicator */}
+            {/* Status indicator with enhanced streaming feedback */}
             <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
-              <span>
-                {socketConnected ? '🟢 Real-time' : '🟡 Standard'} mode
+              <span className="flex items-center space-x-1">
+                <span className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                <span>{socketConnected ? 'Real-time' : 'Standard'} mode</span>
               </span>
               {isStreaming && streamingProgress > 0 && (
-                <span>Streaming: {Math.round(streamingProgress)}%</span>
+                <div className="flex items-center space-x-2">
+                  <span>Streaming: {Math.round(streamingProgress)}%</span>
+                  <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-indigo-500 rounded-full streaming-progress"
+                      style={{ width: `${streamingProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
               )}
             </div>
           </form>
