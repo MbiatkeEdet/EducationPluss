@@ -48,6 +48,7 @@ export default function WritingHelpPage() {
   const [followUpResponse, setFollowUpResponse] = useState(null);
   const [copiedStates, setCopiedStates] = useState({});
   const [toolsCollapsed, setToolsCollapsed] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleToolSelect = (tool) => {
     setSelectedTool(tool);
@@ -55,6 +56,7 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
+    setIsProcessing(false);
     setToolsCollapsed(true); // Collapse tools after selection
   };
 
@@ -64,17 +66,21 @@ export default function WritingHelpPage() {
     setInitialMessage('');
     setAiResponse(null);
     setFollowUpResponse(null);
+    setIsProcessing(false);
   };
 
   const handlePromptSubmit = (e) => {
     e.preventDefault();
     if (!customInput.trim()) return;
     
+    setIsProcessing(true);
+    setAiResponse(null); // Clear any previous response
     setInitialMessage(selectedTool.prompt + customInput);
     setCustomInput('');
   };
 
   const handleAiResponse = (response) => {
+    setIsProcessing(false);
     setAiResponse(response);
   };
 
@@ -311,7 +317,7 @@ export default function WritingHelpPage() {
                 </form>
               </div>
               <div className="flex-1 overflow-hidden">
-                {aiResponse ? (
+                {aiResponse && !isProcessing ? (
                   <div className="h-full overflow-y-auto p-2 md:p-6 bg-gray-50">
                     {renderFormattedResponse()}
                     {renderFormattedFollowUpResponse()}

@@ -18,6 +18,7 @@ export default function ChatInterface({
   systemContext = '',
   showChat = true,
   showInput = true,
+  hideAiResponse = false,
   onAiResponse = null,
   formatInstructions = '',
   feature = null,
@@ -585,7 +586,11 @@ RESPONSE FORMATTING GUIDELINES:
         {connectionStatus !== 'connected' && renderConnectionStatus()}
 
         {chatHistory
-          .filter(msg => msg.role !== 'system')
+          .filter(msg => {
+            if (msg.role === 'system') return false;
+            if (hideAiResponse && msg.role === 'assistant' && !msg.streaming) return false;
+            return true;
+          })
           .map((msg, index) => (
           <div key={msg.id || index} className={`flex message-enter ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs lg:max-w-4xl px-4 py-3 rounded-lg shadow-sm ${
